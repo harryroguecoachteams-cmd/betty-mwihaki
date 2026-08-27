@@ -65,20 +65,29 @@ or results was invented.
    placeholders. Betty gave two real client outcomes (the 30 lb / pre-diabetic
    client, and her cousin) and those sit on the page as *results*, in her own
    words, unnamed. Named testimonials still need collecting.
-4. **Photos of Betty.** Every image is licensed stock from Pexels, hotlinked. The
-   "About" portrait is a placeholder. Get real photos: one from a competition,
-   one relaxed in a kitchen. Consider self-hosting the stock images in
-   `assets/img/` before launch rather than hotlinking.
-5. **Pricing.** Left as "Investment shared on your call" everywhere. Her form says
+4. **Photo resolution.** Betty's real photos are now in `assets/img/`, but they
+   arrived as screenshots at 460-600px. They are sharp enough at the sizes used
+   (splits, strips, portrait) but NOT big enough for a full-bleed hero, which is
+   why the four page heroes are still high-resolution stock. Ask her for the
+   originals and the heroes can become hers too.
+   Remaining stock images (all hotlinked from Pexels): the four page heroes, the
+   meal-prep strip cell, the "you are still stuck" portrait (deliberately a
+   client, not Betty), the freebie image, the three Shop products and the six
+   blog thumbnails. Self-host these into `assets/img/` before launch rather than
+   depending on Pexels' CDN.
+5. **Photo credit.** Several of Betty's shots (the studio, cable and pull-up
+   frames) look professionally taken. Confirm she has the right to publish them
+   and whether the photographer needs crediting.
+6. **Pricing.** Left as "Investment shared on your call" everywhere. Her form says
    the audience can pay $1,000+; she has not confirmed a number.
-6. **Facebook URL.** Intake gave the display name "Beatrice M" only, no link. The
+7. **Facebook URL.** Intake gave the display name "Beatrice M" only, no link. The
    footer icon points at `#`.
-7. **Ebook file.** She has written one. It is not in the repo and there is nothing
+8. **Ebook file.** She has written one. It is not in the repo and there is nothing
    to deliver on signup yet.
-8. **Blog articles.** Six titles written from her own keywords; no article pages
+9. **Blog articles.** Six titles written from her own keywords; no article pages
    exist. Cards say "Coming soon".
-9. **Domain.** Currently on `github.io`. Point a real domain when she has one.
-10. **Third success story** on the niche form is blank, as is the Section 2
+10. **Domain.** Currently on `github.io`. Point a real domain when she has one.
+11. **Third success story** on the niche form is blank, as is the Section 2
     observations field.
 
 ## Health-claims note

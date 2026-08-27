@@ -313,7 +313,7 @@ section[id],div[id]{scroll-margin-top:100px;}
   .nav .btn{margin:14px 0 0;}
   .nav-toggle{display:block;}
   .site-header{position:relative;}
-  .cards,.quotes,.tiers,.products,.posts,.results{grid-template-columns:1fr;gap:32px;}
+  .cards,.quotes,.tiers,.products,.posts,.results,.reels,.comp-strip{grid-template-columns:1fr;gap:32px;}
   .split,.contact-grid{grid-template-columns:1fr;gap:36px;}
   .split.reverse .split-media{order:0;}
   .split img{height:320px;}
@@ -330,12 +330,16 @@ section[id],div[id]{scroll-margin-top:100px;}
   .hero{min-height:520px;padding:80px 20px;}
 }
 
-/* ---------- placeholder image ribbon (draft only, remove at launch) ---------- */
-.ph-media{position:relative;}
-.ph-media::after{
-  content:"PLACEHOLDER \2014 STOCK PHOTO, NOT BETTY";
-  position:absolute;left:0;right:0;bottom:0;
-  background:rgba(209,0,61,.92);color:#fff;
-  font-family:var(--sans);font-size:.68rem;font-weight:700;letter-spacing:.14em;
-  text-align:center;padding:10px 8px;
+
+/* ---------- video reels ---------- */
+.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+.reel{margin:0;background:#fff;border:1px solid var(--line);}
+.reel video{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#000;}
+.reel figcaption{
+  padding:16px 20px;font-family:var(--display);font-size:.98rem;
+  color:var(--teal);letter-spacing:.02em;
 }
+
+/* ---------- competition strip ---------- */
+.comp-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.comp-strip img{width:100%;height:360px;object-fit:cover;object-position:center top;}
