@@ -329,3 +329,13 @@ section[id],div[id]{scroll-margin-top:100px;}
   .pillars,.steps,.footer-grid{grid-template-columns:1fr;}
   .hero{min-height:520px;padding:80px 20px;}
 }
+
+/* ---------- placeholder image ribbon (draft only, remove at launch) ---------- */
+.ph-media{position:relative;}
+.ph-media::after{
+  content:"PLACEHOLDER \2014 STOCK PHOTO, NOT BETTY";
+  position:absolute;left:0;right:0;bottom:0;
+  background:rgba(209,0,61,.92);color:#fff;
+  font-family:var(--sans);font-size:.68rem;font-weight:700;letter-spacing:.14em;
+  text-align:center;padding:10px 8px;
+}
