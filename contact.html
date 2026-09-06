@@ -45,38 +45,33 @@
   </div>
 </header>
 
-<div class="rail" aria-hidden="true"><div class="rail-line"><div class="rail-fill"></div><div class="rail-pt"></div></div></div>
-
 <main id="main">
 
-<section class="phero" data-sec="Start here">
+<section class="phero">
   <div class="wrap wide">
     <div class="phero-grid">
       <div>
-        <p class="eyebrow">Start here</p>
-        <h1 data-rv="lines"><span class="ln"><i>Let us talk about</i></span>
-        <span class="ln"><i>your week, not</i></span>
-        <span class="ln"><i>another diet.</i></span></h1>
-        <p class="lede" data-rv style="--d:560ms">A free 20-minute conversation. No pressure and no
+        <h1 data-rv="lines"><span class="ln"><span>Let us talk about</span></span>
+        <span class="ln"><span>your week, not</span></span>
+        <span class="ln"><span>another diet.</span></span></h1>
+        <p class="lede">A free 20-minute conversation. No pressure and no
         pitch you have to sit through, just an honest answer on whether I can
         help.</p>
       </div>
-      <div><div class="imgwrap sq"><div class="par"><img src="assets/img/betty-street.jpg" alt="Betty out walking on a bright street" fetchpriority="high" decoding="async"></div></div></div>
+      <div><div class="imgwrap sq"><img src="assets/img/betty-street.jpg" alt="Betty out walking on a bright street" fetchpriority="high" decoding="async"></div></div>
     </div>
   </div>
-  <div class="shapes" aria-hidden="true"><span class="shape s1 d1"></span><span class="shape s2 d2"></span></div>
 </section>
 
-<section class="s" id="book" data-sec="Book a call">
+<section class="s" id="book">
   <div class="wrap">
     <div class="contact-grid">
       <div>
-        <p class="eyebrow">Book your consultation</p>
-        <h2 data-rv="lines"><span class="ln"><i>Tell me where you</i></span>
-        <span class="ln"><i>are right now.</i></span></h2>
-        <p data-rv style="--d:140ms">Fill this in and I will come back to you with a time. If you
+        <h2 data-rv><span class="ln"><span>Tell me where you</span></span>
+        <span class="ln"><span>are right now.</span></span></h2>
+        <p>Fill this in and I will come back to you with a time. If you
         would rather just email, that works too.</p>
-        <form action="https://formspree.io/f/REPLACE_ME" method="POST" data-rv style="--d:200ms">
+        <form action="https://formspree.io/f/REPLACE_ME" method="POST">
           <div class="field">
             <label for="c-name">Your name</label>
             <input id="c-name" name="name" type="text" autocomplete="name" required>
@@ -102,13 +97,8 @@
           <input type="hidden" name="_subject" value="New consultation request - Betty">
           <button class="btn btn-clay" type="submit">Request my free call</button>
         </form>
-        <div class="todo">
-          <strong>Draft note:</strong> this form is not wired up yet. Point it at
-          a Formspree endpoint, or drop in a Calendly or TidyCal embed, and it
-          goes live.
-        </div>
       </div>
-      <aside class="info-block" data-rv="right" style="--d:180ms">
+      <aside class="info-block">
         <h3>Reach Betty directly</h3>
         <dl>
           <dt>Email</dt>
@@ -127,30 +117,34 @@
   </div>
 </section>
 
-<section class="freebie" id="guide" data-sec="Free guide">
+<section class="s guide" id="guide">
   <div class="wrap">
-    <div class="split">
+    <div class="split lean">
       <div class="split-copy">
         <p class="eyebrow">Free guide</p>
-        <h2 data-rv="lines"><span class="ln"><i>The label-reading</i></span>
-        <span class="ln"><i>guide for real life</i></span></h2>
-        <p class="lede" data-rv style="--d:120ms">Serving size, protein, added sugar. Three numbers, in
+        <h2><span class="ln"><span>The label-reading</span></span>
+        <span class="ln"><span>guide for real life</span></span></h2>
+        <p class="lede">Serving size, protein, added sugar. Three numbers, in
         that order, and you can judge almost any packet in the aisle. This is the
         short, plain-English guide I wish every woman had before she started
         another diet.</p>
-        <form class="optin" action="https://formspree.io/f/REPLACE_ME" method="POST" data-rv style="--d:200ms">
+        <form class="optin" action="https://formspree.io/f/REPLACE_ME" method="POST">
           <input type="text" name="name" placeholder="First name" aria-label="First name" required>
           <input type="email" name="email" placeholder="Your email address" aria-label="Email address" required>
           <input type="hidden" name="_subject" value="New download - The label-reading guide for real life">
           <button class="btn btn-clay" type="submit">Send it to me</button>
         </form>
-        <p class="form-note" data-rv style="--d:260ms">No spam. Unsubscribe any time.</p>
+        <p class="form-note">No spam. Unsubscribe any time.</p>
       </div>
-      <div class="split-media"><div class="imgwrap wide" style="--ar:1.2/1"><div class="par"><img src="assets/img/guide-table.jpg" alt="A food diary open on a table beside an apple and a glass of water" loading="lazy" decoding="async"></div></div></div>
+      <div class="split-media">
+        <div class="three" aria-hidden="true">
+          <p>Serving size</p>
+          <p>Protein</p>
+          <p>Added sugar</p>
+        </div>
+        <p class="note"><svg class="tick" viewBox="0 0 26 38" fill="none" aria-hidden="true"><path d="M1.6 1.4c-.2 9.6.5 16.5 2.5 21 2.4 5.4 8.2 8.8 19.4 10.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M19.2 28.4L24 32.3l-4.6 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Three numbers, in that order.</span></p>
+      </div>
     </div>
-  </div>
-  <div class="shapes" aria-hidden="true">
-    <span class="shape s1 d1"></span><span class="shape s2 d3"></span>
   </div>
 </section>
 </main>

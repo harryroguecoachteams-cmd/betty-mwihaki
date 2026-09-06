@@ -21,9 +21,10 @@ window.audit = (function () {
                'shop.html', 'blog.html', 'contact.html'];
   var WIDTHS = [320, 375, 390, 430, 600, 768, 834, 1024, 1180, 1280, 1440, 1920];
 
-  // decorative or deliberately off-canvas: the closed nav panel, the ambient
-  // circles inside overflow:hidden parents, and the marquee track
-  var IGNORE = /^(nav|shape|marq-track|it|skip|nav-scrim)/;
+  // decorative or deliberately off-canvas: the closed nav panel, the skip link.
+  // Anything INSIDE the closed panel is off canvas by design too, so probe 2
+  // also skips descendants of #nav rather than only the panel itself.
+  var IGNORE = /^(nav|skip)/;
 
   function frame(page, w, h) {
     return new Promise(function (resolve) {
@@ -64,7 +65,9 @@ window.audit = (function () {
         r.ov = de.scrollWidth - de.clientWidth;
 
         // 2. anything sticking out past the edges that is not decorative
-        r.wide = [].slice.call(d.querySelectorAll('body *')).map(function (e) {
+        r.wide = [].slice.call(d.querySelectorAll('body *'))
+          .filter(function (e) { return !e.closest('#nav'); })
+          .map(function (e) {
           var b = e.getBoundingClientRect();
           return { c: (e.getAttribute('class') || e.tagName).slice(0, 26),
                    r: Math.round(b.right), l: Math.round(b.left) };

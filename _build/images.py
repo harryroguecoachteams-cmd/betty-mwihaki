@@ -22,7 +22,7 @@ OUT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 #   https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?auto=compress&cs=tinysrgb&w=1400
 PEXELS = {
     'meals-glass': 4929677, 'meal-prep': 30635717, 'ingredients': 4963581,
-    'bowl': 566564, 'guide-table': 12499375, 'woman-thinking': 8560799,
+    'bowl': 566564, 'guide-table': 12499375,
     'kitchen-woman': 3960597, 'kitchen-scale': 3743169,
     'kitchen-slice': 8552737, 'kitchen-plates': 12673786,
     'plate-balanced': 3814676, 'veg-white': 142520,
@@ -62,15 +62,56 @@ def stock(fn, out, ratio, w, focus=0.5, vfocus=0.5, q=82):
     save(im.resize((w, int(round(w / ratio))), Image.LANCZOS), out, q=q, sharpen=False)
 
 
+# ---------------------------------------------------------------- new photos --
+# Five photographs Betty sent on 3 Sep 2026, 945-1200px wide, so for the first
+# time these are DOWNSCALES rather than upscales. They exist to make the site
+# unmistakably hers: real places, real clothes, ordinary light. No unsharp mask,
+# because nothing here is being stretched.
+WA = {
+    'coast':  '9.13.19 PM',   # running on the sand at Haystack Rock
+    'trail':  '9.13.55 PM',   # on a walking trail, hand shading her eyes
+    'cabin':  '9.15.03 PM',   # smiling in an aircraft seat
+    'red-a':  '9.17.29 PM',   # red dress, sisal baskets on the wall
+    'red-b':  '9.17.35 PM',
+}
+
+
+def wa(key):
+    return Image.open(os.path.join(
+        SRC, 'WhatsApp Image 2026-09-03 at %s.jpeg' % WA[key]))
+
+
+def new_photos():
+    # Wide editorial plate, and the one full-bleed image on the site. The
+    # source is 945px, so 1440 is a 1.52x upscale, over the 1.2x ceiling every
+    # other placement respects. It is allowed here and only here: the subject is
+    # 40px tall in a hazy seascape, where softness reads as distance rather than
+    # as a defect, and the page needs one image that runs edge to edge. Resample
+    # once at 1440 rather than shipping 1120 and letting the browser stretch it.
+    save(cover(wa('coast'), 2.35, vfocus=0.42).resize((1440, 613), Image.LANCZOS),
+         'coast-wide.jpg', q=82)
+    # Everything below is a downscale, so no sharpening and a higher quality.
+    save(cover(wa('trail'), 0.82, focus=0.46, vfocus=0.46)
+         .resize((660, 805), Image.LANCZOS), 'betty-trail.jpg', q=86, sharpen=False)
+    save(cover(wa('cabin'), 1.00, focus=0.42, vfocus=0.34)
+         .resize((520, 520), Image.LANCZOS), 'betty-cabin.jpg', q=86, sharpen=False)
+    save(cover(wa('red-b'), 0.70, focus=0.50, vfocus=0.44)
+         .resize((580, 829), Image.LANCZOS), 'betty-red.jpg', q=86, sharpen=False)
+
+
 def main():
     if not os.path.isdir(OUT):
         os.makedirs(OUT)
+
+    new_photos()
 
     # ---- Betty's own photography ------------------------------------------
     # Screenshot_4 is the frame the brand deck picked for the homepage: warm,
     # face forward, personality first. Crop off the carousel dots at the bottom.
     save(cover(shot(4).crop((0, 0, 549, 558)), 0.80, focus=0.58), 'betty-hero.jpg', q=88)
     save(cover(shot(16), 0.80, focus=0.48), 'betty-portrait.jpg', q=88)
+    # currently unplaced: the coast plate from the 3 Sep batch is the same
+    # scene at four times the resolution. Kept because it is her photograph.
     save(cover(shot(14), 1.34, vfocus=0.42), 'betty-beach.jpg')
     save(cover(shot(10), 1.00, vfocus=0.45), 'betty-street.jpg')
     save(cover(shot(21), 0.80), 'betty-kettlebell.jpg')
@@ -80,13 +121,16 @@ def main():
     save(cover(shot(7), 1.00), 'betty-backstage.jpg')
     save(cover(shot(11), 1.00), 'betty-track.jpg')
 
+    if not os.path.isdir(STOCK):
+        print('no _build/_stock, skipping the licensed stock rebuild')
+        return
+
     # ---- food, teaching and reader photography ----------------------------
     stock('meals-glass', 'food-portions.jpg', 1.20, 1000)
     stock('meal-prep', 'food-prep.jpg', 1.00, 760)
     stock('ingredients', 'food-whole.jpg', 1.00, 760)
     stock('bowl', 'food-bowl.jpg', 1.20, 900)
     stock('guide-table', 'guide-table.jpg', 1.20, 900)
-    stock('woman-thinking', 'reader-quiet.jpg', 0.80, 760, vfocus=0.35)
 
     # Journal thumbnails. Deck image rule: would the woman in this photo feel
     # understood, or evaluated? No before-and-afters, no body scrutiny, no

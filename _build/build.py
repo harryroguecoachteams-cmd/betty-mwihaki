@@ -8,12 +8,38 @@ footer, freebie band and CTA stay identical everywhere.
 Copy is taken from the Betty Brand Identity Deck (Rogue Coach Teams) and from
 Betty's own Coaching Niche Discovery Form. Nothing about her background or her
 client outcomes is invented. House style: US English, no em dashes.
+
+September 2026 humanization pass
+--------------------------------
+The previous build was correct and consistent, and that was the problem: twelve
+sections in a row made from one kit, an eyebrow above every heading, 01/02/03
+four separate times, three equal rounded cards whenever there happened to be
+three of something. This pass keeps the copy, the palette, the type and the
+information architecture, and breaks the template:
+
+  * eyebrows survive in three places on the whole site, where they carry
+    information rather than describe what the section is doing;
+  * numbering survives only on the five phases, where the sequence is real;
+  * card grids are replaced by open editorial layouts wherever the content did
+    not genuinely need containment (pricing and products still do);
+  * card counts and copy lengths are deliberately uneven;
+  * the marquee, the animated clarity field, the drawn SVG arc and the scroll
+    rail are gone;
+  * one recurring device replaces the generic decorative circles: a clay margin
+    note, set in Lora italic with a drawn tick, quoting a line that is already
+    in the approved copy. Three of them on the whole site.
+
+Draft notes to Betty used to render on the public pages. They are now in
+README.md under "Open items" and DRAFT_NOTES stays False.
 """
 import io
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.abspath(os.path.join(HERE, '..'))
+
+# Internal notes never ship. Flip to True only for a local review build.
+DRAFT_NOTES = False
 
 NAV = [
     ('about.html', 'About'),
@@ -26,19 +52,36 @@ BOOK = 'contact.html#book'
 
 # --------------------------------------------------------------- fragments --
 def lines(*ls):
-    """Editorial headline split into masked lines. Keep each line short: the
-    mask clips horizontally as well as vertically."""
+    """Authored line breaks in a headline. These are art direction, not a
+    motion hook: the mask that used to clip and reveal each line is gone, so a
+    line that runs long now simply wraps."""
     return '\n        '.join(
-        '<span class="ln"><i>%s</i></span>' % l for l in ls)
+        '<span class="ln"><span>%s</span></span>' % l for l in ls)
 
 
 def eyebrow(t, extra=''):
+    """Three of these exist on the whole site. If you are about to add a
+    fourth, the section probably needs a better headline instead."""
     return '<p class="eyebrow%s">%s</p>' % ((' ' + extra) if extra else '', t)
 
 
 ARROW = ('<svg class="ar" viewBox="0 0 19 9" fill="none" aria-hidden="true">'
          '<path d="M0 4.5h16.5M13 1l3.9 3.5L13 8" stroke="currentColor" '
          'stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+
+# The one recurring device. A drawn tick, then a line in Lora italic, sitting
+# in the margin the way a note gets written beside a paragraph.
+TICK = ('<svg class="tick" viewBox="0 0 26 38" fill="none" aria-hidden="true">'
+        '<path d="M1.6 1.4c-.2 9.6.5 16.5 2.5 21 2.4 5.4 8.2 8.8 19.4 10.3" '
+        'stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
+        '<path d="M19.2 28.4L24 32.3l-4.6 3.3" stroke="currentColor" '
+        'stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+
+
+def note(text):
+    """A margin note. Only ever quotes a line that is already in the approved
+    copy, so it adds art direction and no new claim."""
+    return '<p class="note">%s<span>%s</span></p>' % (TICK, text)
 
 
 def btn(href, label, kind='clay', cls=''):
@@ -49,25 +92,32 @@ def tlink(href, label):
     return '<a class="tlink" href="%s">%s%s</a>' % (href, label, ARROW)
 
 
-def img(src, alt, cls='', ar='', pos='', delay=''):
-    style = []
-    if ar:
-        style.append('--ar:%s' % ar)
-    if delay:
-        style.append('--d:%s' % delay)
-    st = (' style="%s"' % ';'.join(style)) if style else ''
-    ps = (' style="--pos:%s"' % pos) if pos else ''
-    return ('<div class="imgwrap %s"%s><div class="par">'
+def img(src, alt, cls='', ar='', pos=''):
+    """No clip wipe, no scale settle, no parallax frame. An image is an image."""
+    st = (' style="--ar:%s"' % ar) if ar else ''
+    ps = (' style="object-position:%s"' % pos) if pos else ''
+    return ('<div class="imgwrap %s"%s>'
             '<img src="assets/img/%s" alt="%s" loading="lazy" decoding="async"%s>'
-            '</div></div>') % (cls, st, src, alt, ps)
+            '</div>') % (cls, st, src, alt, ps)
 
 
 def hero_img(src, alt, cls='', ar=''):
     """Above the fold: never lazy, and it is the LCP element."""
-    style = (' style="--ar:%s"' % ar) if ar else ''
-    return ('<div class="imgwrap %s"%s><div class="par">'
+    st = (' style="--ar:%s"' % ar) if ar else ''
+    return ('<div class="imgwrap %s"%s>'
             '<img src="assets/img/%s" alt="%s" fetchpriority="high" decoding="async">'
-            '</div></div>') % (cls, style, src, alt)
+            '</div>') % (cls, st, src, alt)
+
+
+def figure(src, alt, caption, cls='', ar='', pos=''):
+    """A photograph that says where it was taken. Captions are how a page stops
+    looking like it was assembled from a library."""
+    return ('<figure class="fig %s">%s<figcaption>%s</figcaption></figure>'
+            % (cls, img(src, alt, '', ar, pos), caption))
+
+
+def todo(html):
+    return html if DRAFT_NOTES else ''
 
 
 # ------------------------------------------------------------------ shell ---
@@ -114,8 +164,6 @@ HEAD = u"""<!doctype html>
     </nav>
   </div>
 </header>
-
-<div class="rail" aria-hidden="true"><div class="rail-line"><div class="rail-fill"></div><div class="rail-pt"></div></div></div>
 
 <main id="main">
 """
@@ -200,63 +248,62 @@ def shell(page, title, desc, body):
 
 
 # ------------------------------------------------------- shared components --
+# The free guide is the one place an eyebrow earns its keep: "Free guide" is
+# information. The visual is the guide's actual content, set as type, instead of
+# a stock photograph of somebody else's food diary.
 GUIDE = u"""
-<section class="freebie" id="guide" data-sec="Free guide">
+<section class="s guide" id="guide">
   <div class="wrap">
-    <div class="split">
+    <div class="split lean">
       <div class="split-copy">
         {eyebrow}
-        <h2 data-rv="lines">{h}</h2>
-        <p class="lede" data-rv style="--d:120ms">Serving size, protein, added sugar. Three numbers, in
+        <h2>{h}</h2>
+        <p class="lede">Serving size, protein, added sugar. Three numbers, in
         that order, and you can judge almost any packet in the aisle. This is the
         short, plain-English guide I wish every woman had before she started
         another diet.</p>
-        <form class="optin" action="https://formspree.io/f/REPLACE_ME" method="POST" data-rv style="--d:200ms">
+        <form class="optin" action="https://formspree.io/f/REPLACE_ME" method="POST">
           <input type="text" name="name" placeholder="First name" aria-label="First name" required>
           <input type="email" name="email" placeholder="Your email address" aria-label="Email address" required>
           <input type="hidden" name="_subject" value="New download - The label-reading guide for real life">
           <button class="btn btn-clay" type="submit">Send it to me</button>
         </form>
-        <p class="form-note" data-rv style="--d:260ms">No spam. Unsubscribe any time.</p>
+        <p class="form-note">No spam. Unsubscribe any time.</p>
       </div>
-      <div class="split-media">{img}</div>
+      <div class="split-media">
+        <div class="three" aria-hidden="true">
+          <p>Serving size</p>
+          <p>Protein</p>
+          <p>Added sugar</p>
+        </div>
+        {n}
+      </div>
     </div>
   </div>
-  <div class="shapes" aria-hidden="true">
-    <span class="shape s1 d1"></span><span class="shape s2 d3"></span>
-  </div>
 </section>
-""".format(
-    eyebrow=eyebrow('Free guide'),
-    h=lines('The label-reading', 'guide for real life'),
-    img=img('guide-table.jpg', 'A food diary open on a table beside an apple and a glass of water',
-            'wide', '1.2/1'))
+""".format(eyebrow=eyebrow('Free guide'),
+           h=lines('The label-reading', 'guide for real life'),
+           n=note('Three numbers, in that order.'))
 
 
 def cta(h_lines, sub, label='Book a free call'):
     return u"""
-<section class="cta" data-sec="Start here">
+<section class="cta">
   <div class="wrap">
     <div class="cta-grid">
+      <h2>{h}</h2>
       <div>
-        {eyebrow}
-        <h2 data-rv="lines">{h}</h2>
-      </div>
-      <div>
-        <p class="lede" data-rv style="--d:120ms">{sub}</p>
-        <div class="actions" data-rv style="--d:200ms">
+        <p class="lede">{sub}</p>
+        <div class="actions">
           {btn}
           {tl}
         </div>
       </div>
     </div>
   </div>
-  <div class="shapes" aria-hidden="true">
-    <span class="shape s1 d2"></span><span class="shape s2 d1"></span><span class="shape s3 d3"></span>
-  </div>
 </section>
-""".format(eyebrow=eyebrow('Start here'), h=lines(*h_lines), sub=sub,
-           btn=btn(BOOK, label, 'clay'), tl=tlink('services.html', 'See the 16-week method'))
+""".format(h=lines(*h_lines), sub=sub, btn=btn(BOOK, label, 'clay'),
+           tl=tlink('services.html', 'See the 16-week method'))
 
 
 PHASES = [
@@ -282,98 +329,70 @@ PHASES = [
      'anyone to give you permission.'),
 ]
 
-ARC_PATH = 'M 92 214 C 300 214 336 92 566 128 C 796 164 838 62 1108 78'
 
-
-def arc_block(dark=False):
-    labels = '|'.join(p[0] for p in PHASES)
-    stroke = 'rgba(255,255,255,.22)' if dark else 'var(--sage-line)'
-    return u"""
-    <div class="arc-wrap" data-phases="{labels}" aria-hidden="true">
-      <svg viewBox="0 0 1200 300" fill="none" preserveAspectRatio="xMidYMid meet">
-        <path class="track" d="{d}" stroke="{stroke}" stroke-width="1.5"/>
-        <path class="draw" d="" stroke="var(--clay)" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      <div class="arc-nodes"></div>
-    </div>
-""".format(labels=labels, d=ARC_PATH, stroke=stroke)
-
-
-def rails_block(full=False, cls='rails-mobile'):
+def phase_list(full=False):
+    """The five phases, as a plain editorial timeline. This is the only place on
+    the site that still numbers anything, because here the order is the point."""
     items = []
     for i, (name, short, long) in enumerate(PHASES):
-        body = long if full else short
         items.append(
-            '      <div class="phase">\n'
+            '      <li class="phase">\n'
             '        <p class="p">Phase 0%d</p>\n'
             '        <h3>%s</h3>\n'
             '        <p class="d">%s</p>\n'
-            '      </div>' % (i + 1, name, body))
-    return ('    <div class="rails %s">\n'
-            '      <div class="prog"></div>\n%s\n    </div>\n'
-            % (cls, '\n'.join(items)))
+            '      </li>' % (i + 1, name, long if full else short))
+    return '    <ol class="phases">\n%s\n    </ol>\n' % '\n'.join(items)
 
 
 PRINCIPLES = [
-    ('Understand your food', 'Learn the reason, never just the rule.'),
+    ('Understand your food',
+     'Learn the reason, never just the rule. If you cannot say out loud why a '
+     'food is on your plate, the plan is doing the thinking for you, and it will '
+     'stop working the first week life gets complicated.'),
     ('Keep it practical', 'It has to work in an ordinary week.'),
-    ('Progress over perfection', 'One meal never becomes a verdict.'),
+    ('Progress over perfection',
+     'One meal never becomes a verdict. You are allowed a bad Tuesday.'),
     ('You do not do it alone', 'Support and accountability stay human.'),
-    ('Learn it for life', 'Build capability, not dependency.'),
+    ('Learn it for life',
+     'Build capability, not dependency. The whole design is that you leave.'),
 ]
-
-SIGNATURE = [
-    'Stop guessing what to eat. Start understanding your food.',
-    'You do not need more nutrition noise.',
-    'Progress comes from what you repeat.',
-    'Build habits you can actually maintain.',
-]
-
-
-def marquee(dark=False):
-    its = ''.join('<span class="it">%s</span>' % s for s in SIGNATURE)
-    return ('<div class="marq%s" aria-label="Betty in four lines">'
-            '<div class="marq-track">%s</div></div>'
-            % (' dark' if dark else '', its))
 
 
 # =============================================================== index.html ==
 def build_index():
     b = []
 
+    # ------------------------------------------------------------------ hero
+    # The floating circles are gone. The 16-week badge is now a caption bolted
+    # to the bottom of the photograph rather than a white card hovering over it.
     b.append(u"""
-<section class="hero" data-sec="Top">
+<section class="hero">
   <div class="hero-grid">
     <div class="hero-copy">
       {eyebrow}
       <h1 data-rv="lines">{h}</h1>
-      <p class="lede" data-rv style="--d:620ms">Practical nutrition coaching for women who are
+      <p class="lede">Practical nutrition coaching for women who are
       ready for sustainable progress they can maintain.</p>
-      <div class="actions" data-rv style="--d:740ms">
+      <div class="actions">
         {b1}
         {tl}
       </div>
     </div>
-    <div class="hero-art">
+    <figure class="hero-art">
       {im}
-      <div class="badge" data-rv="scale" style="--d:900ms">
-        <span class="k"><span data-count="16">16</span> weeks</span>
-        <span class="v">Clarity &middot; Action &middot; Accountability</span>
-      </div>
-    </div>
-  </div>
-  <div class="shapes" aria-hidden="true">
-    <span class="shape s1 d1"></span><span class="shape s2 d2"></span><span class="shape s3 d3"></span>
+      <figcaption>
+        <b>Sixteen weeks</b>
+        <span>Clarity, action, accountability</span>
+      </figcaption>
+    </figure>
   </div>
 </section>
 
-<section class="hero-strip">
-  <div class="wrap wide" data-stagger="110">
-    <div class="it"><h3>Food clarity</h3><p>Understand your food</p></div>
-    <div class="it"><h3>Simple action</h3><p>Build real-life routines</p></div>
-    <div class="it"><h3>Confidence</h3><p>Stop starting over</p></div>
+<div class="strip">
+  <div class="wrap">
+    <p>Food clarity<i></i>Simple action<i></i>Confidence</p>
   </div>
-</section>
+</div>
 """.format(eyebrow=eyebrow('The Food Clarity Method'),
            h=lines('Stop guessing', 'what to eat.', 'Start understanding',
                    'your food.'),
@@ -382,294 +401,270 @@ def build_index():
            im=hero_img('betty-hero.jpg',
                        'Betty smiling on the water in a red jacket', 'tall')))
 
-    # her words
+    # -------------------------------------------------------------- her words
     b.append(u"""
-<section class="s statement" data-sec="Her words">
+<section class="s tight statement">
   <div class="wrap">
     <div class="statement-grid">
-      <div>
-        {eyebrow}
-        <p class="q" data-rv="lines">{q}</p>
-      </div>
+      <p class="q" data-rv>{q}</p>
       <div class="after">
-        <p class="lede" data-rv style="--d:200ms">If you have said a version of that out loud, you are
+        <p class="lede">If you have said a version of that out loud, you are
         in the right place. No shame and no panic. Just practical education and
         steady support until food makes sense again.</p>
-        <div class="actions" data-rv style="--d:280ms">{tl}</div>
+        <div class="actions">{tl}</div>
       </div>
     </div>
   </div>
-  <div class="shapes" aria-hidden="true"><span class="shape s1 d3"></span></div>
 </section>
-""".format(eyebrow=eyebrow('Her words'),
-           q=lines('&ldquo;I am eating', 'healthy, but I am',
+""".format(q=lines('&ldquo;I am eating', 'healthy, but I am',
                    'still not losing', 'weight. I do not',
-                   '<span class="hl">know what to try next.</span>&rdquo;'),
+                   '<em>know what to try next.</em>&rdquo;'),
            tl=tlink('about.html', 'Meet Betty')))
 
-    # who this is for
+    # ------------------------------------------------------- who this is for
+    # Was three equal rounded cards numbered 01/02/03. Now one column of running
+    # editorial with hanging subheads and deliberately uneven paragraphs.
     b.append(u"""
-<section class="s bg-oat" data-sec="Who it is for">
+<section class="s">
   <div class="wrap">
-    <div class="split lean">
-      <div class="split-copy">
-        {eyebrow}
-        <h2 data-rv="lines">{h}</h2>
-        <p class="lede" data-rv style="--d:140ms">You have tried diets, supplements and weight-loss
+    <div class="ed">
+      <div class="ed-head">
+        <h2 data-rv>{h}</h2>
+      </div>
+      <div class="ed-body" data-rv>
+        <p class="lede">You have tried diets, supplements and weight-loss
         trends. You are tired of being handed another rule without any real
         understanding of why it is supposed to work.</p>
+        <div class="ed-row">
+          <h3>Where you are</h3>
+          <p>You still struggle with stubborn weight and belly fat, even in the
+          weeks when you feel like you are doing everything right. You have read
+          the articles and followed the accounts. You have probably been stricter
+          with yourself than anyone reading this would guess, and the mirror has
+          not agreed with the effort.</p>
+        </div>
+        <div class="ed-row">
+          <h3>What keeps frustrating you</h3>
+          <p>Every source tells you something different, and all of them sound
+          certain.</p>
+        </div>
+        <div class="ed-row">
+          <h3>What you actually need</h3>
+          <p>Clear guidance, a structure that survives a real week, and someone
+          holding you to it who is not going to judge you.</p>
+        </div>
       </div>
-      <div class="split-media">{im}</div>
-    </div>
-    <div class="cards mt-l" data-stagger="110">
-      <div class="card"><span class="num">01</span><h3>Where you are</h3>
-        <p>You still struggle with stubborn weight and belly fat, even in the
-        weeks when you feel like you are doing everything right.</p></div>
-      <div class="card"><span class="num">02</span><h3>What is frustrating</h3>
-        <p>You are confused about what actually works, because every source
-        tells you something different and all of them sound certain.</p></div>
-      <div class="card"><span class="num">03</span><h3>What you need</h3>
-        <p>Clear guidance, a structure that survives a real week, and someone
-        holding you to it who is not going to judge you.</p></div>
     </div>
   </div>
 </section>
-""".format(eyebrow=eyebrow('Who this is for'),
-           h=lines('You are not new', 'to trying.'),
-           im=img('reader-quiet.jpg',
-                  'A woman sitting quietly at home, thinking', 'tall', '',
-                  '50% 30%')))
+""".format(h=lines('You are not new', 'to trying.')))
 
-    # position
+    # ----------------------------------------------- the difference + a plate
+    # Was three connected rounded panels with animated connector lines, then a
+    # line reading "Clarity is the competitive advantage", which is a consulting
+    # deck sentence and not something Betty would say. Both are gone.
     b.append(u"""
-<section class="s" data-sec="The gap">
+<section class="s bg-oat">
   <div class="wrap">
-    <div class="head">
-      {eyebrow}
-      <h2 data-rv="lines">{h}</h2>
-      <p class="lede" data-rv style="--d:140ms">She cuts through the conflicting advice first, then
-      turns what is left into a routine you can actually keep.</p>
+    <div class="ed">
+      <div class="ed-head">
+        <h2 data-rv>{h}</h2>
+        <p class="lede">She cuts through the conflicting advice first, then
+        turns what is left into a routine you can actually keep.</p>
+      </div>
+      <div class="ed-body">
+        <div class="ladder" data-rv>
+          <div class="rung">
+            <p class="k">The noise</p>
+            <p class="t">Diets, supplements and weight-loss trends.</p>
+          </div>
+          <div class="rung">
+            <p class="k">What is missing</p>
+            <p class="t">Understanding what, how much and why to eat.</p>
+          </div>
+          <div class="rung her">
+            <p class="k">Betty</p>
+            <p class="t">The practical coach who makes the next step clear.</p>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="tript">
-      <div class="pan noise"><span class="k">The noise</span><p>Diets, supplements and weight-loss trends.</p></div>
-      <div class="conn" style="--d:250ms"></div>
-      <div class="pan gap"><span class="k">The gap</span><p>Understanding what, how much and why to eat.</p></div>
-      <div class="conn" style="--d:450ms"></div>
-      <div class="pan betty"><span class="k">Betty</span><p>The practical coach who makes the next step clear.</p></div>
-    </div>
-    <p class="serif-quote center mt-l" data-rv>Clarity is the competitive advantage.</p>
+  </div>
+  <div class="plate">
+    {fig}
   </div>
 </section>
-""".format(eyebrow=eyebrow('The difference'),
-           h=lines('Betty makes nutrition', 'understandable.')))
+""".format(h=lines('Betty makes nutrition', 'understandable.'),
+           fig=figure('coast-wide.jpg',
+                      'Running barefoot on wet sand at Haystack Rock on the '
+                      'Oregon coast',
+                      'Cannon Beach, Oregon. Not a training session. Just a '
+                      'good day.',
+                      'plate-img', '2.35/1')))
 
-    # transformation + clarity field
+    # ------------------------------------------------------ confusion to confidence
+    # Was a scroll-scrubbed field of 49 dots resolving from chaos into a grid,
+    # labelled Noise and Clarity. Clever, abstract, and it could have belonged to
+    # any consultancy. Replaced with a photograph of Betty and a plain sequence.
     b.append(u"""
-<section class="s bg-oat" data-sec="The change">
+<section class="s">
   <div class="wrap">
-    <div class="split lean">
+    <div class="split reverse lean">
+      <div class="split-media">{fig}</div>
       <div class="split-copy">
-        {eyebrow}
-        <h2 data-rv="lines">{h}</h2>
-        <p class="lede" data-rv style="--d:140ms">The outcome is not perfect eating. It is knowing what
+        <h2 data-rv>{h}</h2>
+        <p class="lede">The outcome is not perfect eating. It is knowing what
         to do next, and why.</p>
-        <div class="stages mt-l">
-          <div class="stage" data-stage><span class="n">01</span><div>
-            <h3>Confused</h3><p>Rules, fear and conflicting advice.</p></div></div>
-          <div class="stage" data-stage><span class="n">02</span><div>
-            <h3>Capable</h3><p>Food choices make sense in real life.</p></div></div>
-          <div class="stage" data-stage><span class="n">03</span><div>
-            <h3>Confident</h3><p>You can adjust without starting over.</p></div></div>
-        </div>
-      </div>
-      <div>
-        <div class="clarity" aria-hidden="true">
-          <span class="lbl a">Noise</span>
-          <span class="lbl b">Clarity</span>
+        <div class="seq" data-rv>
+          <div class="st">
+            <h3>Confused</h3>
+            <p>Rules, fear and conflicting advice.</p>
+          </div>
+          <div class="st">
+            <h3>Capable</h3>
+            <p>Food choices make sense in real life.</p>
+          </div>
+          <div class="st on">
+            <h3>Confident</h3>
+            <p>You can adjust without starting over.</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
-""".format(eyebrow=eyebrow('The transformation'),
-           h=lines('Confusion becomes', 'confidence.')))
+""".format(h=lines('Confusion becomes', 'confidence.'),
+           fig=figure('betty-trail.jpg',
+                      'On a walking trail on a bright morning, hand raised '
+                      'against the sun',
+                      'An ordinary morning, on an ordinary trail.',
+                      'tall-fig', '0.82/1')))
 
-    # the method
+    # ------------------------------------------------------------- the method
     b.append(u"""
-<section class="s bg-forest method" data-sec="The method">
+<section class="s bg-forest">
   <div class="wrap">
-    <div class="head center">
-      {eyebrow}
-      <h2 data-rv="lines">{h}</h2>
-      <p class="lede" data-rv style="--d:140ms">A practical 16-week weight-loss and nutrition coaching
-      journey, in five phases.</p>
-    </div>
-{arc}
-{rails}
-    <div class="actions center" style="justify-content:center" data-rv>
-      {b1}
+    <div class="ed">
+      <div class="ed-head">
+        <h2 data-rv>{h}</h2>
+        <p class="lede">A practical 16-week weight-loss and nutrition coaching
+        journey, in five phases. Each one does a single job, and nothing moves
+        until the one before it is holding.</p>
+        <div class="actions">{b1}</div>
+      </div>
+      <div class="ed-body" data-rv>
+{phases}
+      </div>
     </div>
   </div>
 </section>
-""".format(eyebrow=eyebrow('The signature offer', 'center'),
-           h=lines('The Food', 'Clarity Method'),
-           arc=arc_block(dark=True), rails=rails_block(),
+""".format(h=lines('The Food', 'Clarity Method'),
+           phases=phase_list(),
            b1=btn('services.html', 'See the full method', 'ghost', 'auto')))
 
-    # meet betty
+    # ---------------------------------------------------------- meet betty
+    # Two photographs at two different sizes, one of them overlapping, plus a
+    # caption. Asymmetric on purpose.
     b.append(u"""
-<section class="s" data-sec="Betty">
+<section class="s airy">
   <div class="wrap">
     <div class="split reverse">
-      <div class="split-media">{im}</div>
+      <div class="split-media stack-media">
+        {im}
+        {fig}
+      </div>
       <div class="split-copy">
-        {eyebrow}
-        <h2 data-rv="lines">{h}</h2>
-        <p data-rv style="--d:140ms">I began teaching yoga in Kenya at eighteen, guided by
+        <h2 data-rv>{h}</h2>
+        <p>I began teaching yoga in Kenya at eighteen, guided by
         Mrs Kanja, who was the first person to sit me down and teach me about
         eating well. Preparing for bodybuilding competitions in the States is
         where precision nutrition stopped being a theory for me.</p>
-        <p data-rv style="--d:200ms">Then my own body stopped responding the way it used to, and
+        <p>Then my own body stopped responding the way it used to, and
         I understood the frustration from the inside. There is so much health
         information out there that it has become genuinely impossible for a
         normal person to tell what is real and what is marketing.</p>
-        <p data-rv style="--d:260ms">Taking the complicated and making it simple is my natural
+        <p>Taking the complicated and making it simple is my natural
         gift. It is also the whole job.</p>
-        <div class="actions" data-rv style="--d:320ms">{tl}</div>
+        <div class="actions">{tl}</div>
       </div>
     </div>
   </div>
 </section>
-
-<div class="marq-wrap">{marq}</div>
-""".format(eyebrow=eyebrow('Your coach'),
-           h=lines('I take the', 'complicated and', 'make it simple.'),
+""".format(h=lines('I take the', 'complicated and', 'make it simple.'),
            im=img('betty-portrait.jpg',
                   'Betty smiling in a Strength tee, beside a framed photograph '
                   'of herself competing', 'tall'),
-           tl=tlink('about.html', 'Read her story'),
-           marq=marquee()))
+           fig=figure('betty-cabin.jpg', 'Smiling in an aircraft seat',
+                      'Somewhere over the Atlantic.', 'inset-fig', '1/1'),
+           tl=tlink('about.html', 'Read her story')))
 
-    # results
+    # ------------------------------------------------------------- statement
+    # This replaces the infinite scrolling marquee of four brand lines.
     b.append(u"""
-<section class="s bg-oat" data-sec="Results">
+<section class="s tight bg-oat">
   <div class="wrap">
-    <div class="head">
-      {eyebrow}
-      <h2 data-rv="lines">{h}</h2>
-      <p class="lede" data-rv style="--d:140ms">Two stories in Betty's own words. Coaching supports
-      habits, understanding and accountability. It is not a promise of a
-      particular result.</p>
-    </div>
-    <div class="results">
-      <div class="result">
-        <span class="stat"><span data-count="30">30</span> lbs</span>
-        <p>She had already tried plan after plan when she came to me. We did not
-        add a single supplement. We changed how she ate and she learned the
-        reason behind every choice. Thirty pounds down, and she can feed herself
-        now without me.</p>
-        <p class="who">Nutrition coaching client</p>
-      </div>
-      <div class="result dark">
-        <span class="pull">The hardest client I have ever coached.</span>
-        <p>My own cousin. She came to me worried about where her health was
-        heading and we worked through her nutrition together, month after month.
-        Family is the hardest audience there is, and the most worth it. She
-        understands her food now, and she is not guessing anymore.</p>
-        <p class="who">Nutrition coaching client</p>
-      </div>
-    </div>
-    <div class="todo">
-      <strong>Draft note for Betty:</strong> both stories are yours, reworded to
-      stay inside the brand deck's claims rules (page 28): no diagnosis, cure or
-      reversal language, and outcomes framed around coaching and habits. Before
-      launch we need your written confirmation of the wording plus each client's
-      permission to publish it.
-    </div>
+    <p class="big" data-rv>Progress comes from<br>what you <em>repeat</em>.</p>
   </div>
 </section>
-""".format(eyebrow=eyebrow('Real outcomes'),
-           h=lines('What has happened', 'for the women I coach.')))
+""")
 
-    # testimonials
+    # --------------------------------------------------------------- results
+    # Two stories, two different shapes. The three placeholder testimonial cards
+    # that used to follow are gone: they were dashed boxes reading "Client
+    # testimonial goes here" on a live public page.
     b.append(u"""
-<section class="s" data-sec="In her words">
+<section class="s">
   <div class="wrap">
-    <div class="head center">
-      <h2 data-rv="lines">{h}</h2>
-      <p class="lede" data-rv style="--d:140ms">From women who have finished the sixteen weeks.</p>
-    </div>
-    <div class="quotes" data-stagger="110">
-      <div class="quote placeholder-quote"><span class="mark">&ldquo;</span>
-        <p>Client testimonial goes here. Ask for two or three sentences on what
-        she had already tried, what changed, and how she feels in her clothes
-        now.</p>
-        <p class="who">Client name</p><p class="role">Program graduate</p></div>
-      <div class="quote placeholder-quote"><span class="mark">&ldquo;</span>
-        <p>Client testimonial goes here. The strongest ones name the specific
-        fear she had before starting, and what actually happened instead.</p>
-        <p class="who">Client name</p><p class="role">Program graduate</p></div>
-      <div class="quote placeholder-quote"><span class="mark">&ldquo;</span>
-        <p>Client testimonial goes here. A line about learning to read labels or
-        judge portions lands especially well with this audience.</p>
-        <p class="who">Client name</p><p class="role">Program graduate</p></div>
-    </div>
-    <div class="todo">
-      <strong>Draft note for Betty:</strong> these three cards are placeholders
-      on purpose. Send Rogue Coach Teams real testimonials (first name plus one
-      or two sentences, photo optional) and they go straight in.
+    <div class="ed">
+      <div class="ed-head">
+        <h2 data-rv>{h}</h2>
+        <p class="lede">Two stories in Betty's own words. Coaching supports
+        habits, understanding and accountability. It is not a promise of a
+        particular result.</p>
+      </div>
+      <div class="ed-body">
+        <div class="figure-row" data-rv>
+          <p class="stat"><b>30</b><span>pounds</span></p>
+          <div>
+            <p>She had already tried plan after plan when she came to me. We did
+            not add a single supplement. We changed how she ate and she learned
+            the reason behind every choice. Thirty pounds down, and she can feed
+            herself now without me.</p>
+            <p class="who">Nutrition coaching client</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+  <blockquote class="band" data-rv>
+    <div class="wrap">
+      <p class="pull">The hardest client I have ever coached.</p>
+      <p>My own cousin. She came to me worried about where her health was
+      heading and we worked through her nutrition together, month after month.
+      Family is the hardest audience there is, and the most worth it. She
+      understands her food now, and she is not guessing anymore.</p>
+      <footer>Nutrition coaching client</footer>
+    </div>
+  </blockquote>
 </section>
-""".format(h=lines('In her words.')))
+""".format(h=lines('What has happened', 'for the women I coach.')))
 
     b.append(GUIDE)
 
-    # video
+    # ------------------------------------------------------------ principles
     b.append(u"""
-<section class="s" data-sec="In the gym">
-  <div class="wrap">
-    <div class="head center">
-      {eyebrow}
-      <h2 data-rv="lines">{h}</h2>
-      <p class="lede" data-rv style="--d:140ms">Nutrition is the work. Training is where I learned what
-      food actually does.</p>
-    </div>
-    <div class="reels" data-stagger="130">
-      <figure class="reel"><video controls preload="none" playsinline poster="assets/img/betty-carbs-poster.jpg">
-        <source src="assets/video/betty-carbs.mp4" type="video/mp4"></video>
-        <figcaption>Making off-season carbs work</figcaption></figure>
-      <figure class="reel"><video controls preload="none" playsinline poster="assets/img/betty-hiit-poster.jpg">
-        <source src="assets/video/betty-hiit.mp4" type="video/mp4"></video>
-        <figcaption>A legs and glutes finisher</figcaption></figure>
-      <figure class="reel"><video controls preload="none" playsinline poster="assets/img/betty-triceps-poster.jpg">
-        <source src="assets/video/betty-triceps.mp4" type="video/mp4"></video>
-        <figcaption>Why arm size is not just biceps</figcaption></figure>
-    </div>
-  </div>
-</section>
-""".format(eyebrow=eyebrow('In the gym', 'center'),
-           h=lines('I do not just teach this.', 'I live it.')))
-
-    # principles
-    b.append(u"""
-<section class="s bg-oat" data-sec="Principles">
-  <div class="wrap">
-    <div class="head">
-      {eyebrow}
-      <h2 data-rv="lines">{h}</h2>
-    </div>
-    <div class="principles">
+<section class="s">
+  <div class="wrap narrow">
+    <h2 class="mb-l" data-rv>{h}</h2>
+    <div class="beliefs">
 {rows}
     </div>
   </div>
 </section>
-""".format(eyebrow=eyebrow('What I believe'),
-           h=lines('Five beliefs behind', 'every conversation.'),
+""".format(h=lines('Five beliefs behind', 'every conversation.'),
            rows='\n'.join(
-               '      <div class="principle"><span class="n">0%d</span>'
-               '<h3>%s</h3><p>%s</p></div>' % (i + 1, t, d)
-               for i, (t, d) in enumerate(PRINCIPLES))))
+               '      <div class="belief"><h3>%s</h3><p>%s</p></div>' % (t, d)
+               for t, d in PRINCIPLES)))
 
     b.append(cta(['Stop guessing', 'what to eat.'],
                  'Book a free 20-minute conversation. We will talk through what '
@@ -689,181 +684,180 @@ def build_index():
 def build_about():
     b = []
     b.append(u"""
-<section class="phero" data-sec="About">
+<section class="phero">
   <div class="wrap wide">
     <div class="phero-grid">
       <div>
-        {eyebrow}
         <h1 data-rv="lines">{h}</h1>
-        <p class="lede" data-rv style="--d:560ms">I am Betty. I teach women to understand their food, so
+        <p class="lede">I am Betty. I teach women to understand their food, so
         the next choice is obvious and the progress keeps going after I am out of
         the picture.</p>
-        <div class="actions" data-rv style="--d:660ms">{b1}</div>
+        <div class="actions">{b1}</div>
       </div>
       <div>{im}</div>
     </div>
   </div>
-  <div class="shapes" aria-hidden="true"><span class="shape s1 d1"></span><span class="shape s2 d2"></span></div>
 </section>
-""".format(eyebrow=eyebrow('About Betty'),
-           h=lines('Expert enough', 'to trust. Human', 'enough to tell', 'the truth.'),
+""".format(h=lines('Expert enough', 'to trust. Human', 'enough to tell', 'the truth.'),
            b1=btn(BOOK, 'Book a free call', 'clay'),
            im=hero_img('betty-portrait.jpg',
                        'Betty smiling in a Strength tee, beside a framed '
                        'photograph of herself competing', 'tall dn', '4/4.5')))
 
+    # Her story. The red dress photograph bleeds off the left edge, cropped
+    # closer than a grid would allow, because the sisal baskets on that wall are
+    # the single most Betty thing in the whole photo library.
     b.append(u"""
-<section class="s" data-sec="Her story">
+<section class="s">
   <div class="wrap">
     <div class="split">
       <div class="split-copy">
-        {eyebrow}
-        <h2 data-rv="lines">{h}</h2>
-        <p data-rv style="--d:140ms">I found health and fitness young. After finishing high school
+        <h2 data-rv>{h}</h2>
+        <p>I found health and fitness young. After finishing high school
         in Kenya I began teaching yoga classes under the mentorship of Mrs Kanja,
         who was the first person to sit me down and teach me about eating well.</p>
-        <p data-rv style="--d:200ms">After I moved to the States I trained under several coaches
+        <p>After I moved to the States I trained under several coaches
         as I prepared for bodybuilding competitions. That is where precision
         nutrition stopped being a theory for me. I learned what food actually
         does: how varieties and amounts can be adjusted to reach a specific goal
         in a specific body.</p>
-        <p data-rv style="--d:260ms">I competed. I once placed first. What stayed with me was not
+        <p>I competed. I once placed first. What stayed with me was not
         the trophy. It was realizing how much of what I had been taught about
         food before that point was noise.</p>
+        {n}
       </div>
       <div class="split-media">{im}</div>
     </div>
   </div>
 </section>
 
-<section class="s bg-oat">
+<section class="s bg-oat airy">
   <div class="wrap narrow">
-    {eyebrow2}
-    <h2 data-rv="lines">{h2}</h2>
-    <p data-rv style="--d:140ms">As I got older I started noticing it. I could work hard, eat what I
+    <h2 data-rv>{h2}</h2>
+    <p>As I got older I started noticing it. I could work hard, eat what I
     thought was healthy, and still struggle with stubborn belly fat and clothes
     that did not fit the way I wanted them to. It was frustrating, because I felt
     like I was doing everything right.</p>
-    <p data-rv style="--d:180ms">The biggest problem was not a lack of effort. It was confusion.</p>
-    <p data-rv style="--d:220ms">Should I avoid carbs? Should I fast? Should I eat more protein? How
+    <p>The biggest problem was not a lack of effort. It was confusion.</p>
+    <p>Should I avoid carbs? Should I fast? Should I eat more protein? How
     much is too much? Is something labeled &ldquo;healthy&rdquo; actually helping me reach
     my goal?</p>
-    <p data-rv style="--d:260ms">So I went back to the fundamentals: nutrition, portions, consistency,
+    <p>So I went back to the fundamentals: nutrition, portions, consistency,
     and genuinely understanding what I was putting into my body. That changed
     everything for me, and it made one thing very clear. I did not want women to
     believe their only remaining option was another extreme diet or hours they do
     not have in a gym.</p>
-    <p data-rv style="--d:300ms"><strong>That is why I coach.</strong></p>
+    <p class="big-p"><strong>That is why I coach.</strong></p>
   </div>
 </section>
-""".format(eyebrow=eyebrow('My story'),
-           h=lines('It started with yoga', 'in Kenya, at eighteen.'),
-           im=img('betty-beach.jpg', 'Betty walking on a beach', 'wide', '1.34/1'),
-           eyebrow2=eyebrow('Then it happened to me'),
+""".format(h=lines('It started with yoga', 'in Kenya, at eighteen.'),
+           im=figure('betty-red.jpg',
+                     'Standing against a pale wall hung with woven sisal '
+                     'baskets, in a red dress',
+                     'The baskets came from home. So did most of the rest of it.',
+                     'drop', '0.70/1'),
+           n=note('What stayed with me was not the trophy.'),
            h2=lines('My body stopped', 'responding the way', 'it used to.')))
 
     # the promise
     b.append(u"""
-<section class="s" data-sec="The promise">
+<section class="s">
   <div class="wrap">
     <div class="split reverse">
       <div class="split-media">{im}</div>
       <div class="split-copy">
-        {eyebrow}
-        <h2 data-rv="lines">{h}</h2>
-        <p data-rv style="--d:140ms">Most of this market says <em>follow the plan</em>. I would rather
+        <h2 data-rv>{h}</h2>
+        <p>Most of this market says <em>follow the plan</em>. I would rather
         you <em>understand the choice</em>. A printed plan works right up until the
         day you eat something that is not on it.</p>
-        <p data-rv style="--d:200ms">So I teach women to understand food portions. To read a label.
+        <p>So I teach women to understand food portions. To read a label.
         To know what a serving actually looks like on their own plate, instead of
         jumping from one trend to the next and hoping.</p>
-        <p data-rv style="--d:260ms">The goal is to leave you more capable than when you arrived.
+        <p>The goal is to leave you more capable than when you arrived.
         Not more dependent on me.</p>
-        <div class="actions" data-rv style="--d:320ms">{tl}</div>
+        <div class="actions">{tl}</div>
       </div>
     </div>
   </div>
 </section>
-""".format(eyebrow=eyebrow('My promise'),
-           h=lines('Clarity that leads', 'to progress you keep.'),
+""".format(h=lines('Clarity that leads', 'to progress you keep.'),
            im=img('betty-kettlebell.jpg',
                   'Betty holding a kettlebell in a training studio', 'tall'),
            tl=tlink('services.html', 'See the 16-week method')))
 
-    # credibility
+    # Credibility was four numbered cards; personality was four more. Both are
+    # now plain two-column text, which is what they always were underneath.
     b.append(u"""
-<section class="s bg-oat" data-sec="Credibility">
+<section class="s tight bg-oat">
   <div class="wrap">
-    <div class="head">
-      {eyebrow}
-      <h2 data-rv="lines">{h}</h2>
-      <p class="lede" data-rv style="--d:140ms">Where the knowledge came from, and what it lets me
-      shortcut for you.</p>
-    </div>
-    <div class="cards four" data-stagger="100">
-      <div class="card"><span class="num">01</span><h3>Foundation</h3>
-        <p>She began teaching yoga in Kenya at eighteen, guided by Mrs Kanja.</p></div>
-      <div class="card"><span class="num">02</span><h3>Discipline</h3>
-        <p>Bodybuilding preparation sharpened her nutrition precision.</p></div>
-      <div class="card"><span class="num">03</span><h3>Lived empathy</h3>
-        <p>She understands stubborn belly fat and a body that changes.</p></div>
-      <div class="card"><span class="num">04</span><h3>Responsible proof</h3>
-        <p>Client stories shared accurately, and only with permission.</p></div>
+    <div class="ed">
+      <div class="ed-head">
+        <h2 data-rv>{h}</h2>
+        <p class="lede">Where the knowledge came from, and what it lets me
+        shortcut for you.</p>
+      </div>
+      <div class="ed-body">
+        <dl class="deflist" data-rv>
+          <dt>Foundation</dt>
+          <dd>She began teaching yoga in Kenya at eighteen, guided by Mrs Kanja.</dd>
+          <dt>Discipline</dt>
+          <dd>Bodybuilding preparation sharpened her nutrition precision to the
+          point where every gram was accounted for.</dd>
+          <dt>Lived empathy</dt>
+          <dd>She understands stubborn belly fat and a body that changes.</dd>
+          <dt>Responsible proof</dt>
+          <dd>Client stories shared accurately, and only with permission.</dd>
+        </dl>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="s" data-sec="Personality">
-  <div class="wrap">
-    <div class="head">
-      {eyebrow2}
-      <h2 data-rv="lines">{h2}</h2>
-      <p class="lede" data-rv style="--d:140ms">Expert enough to be trusted. Human enough to be told
-      the truth.</p>
-    </div>
-    <div class="persona" data-stagger="100">
-      <div class="p"><h3>Warm</h3><p>She understands the mirror, the frustration and the fear.</p></div>
-      <div class="p"><h3>Plain-spoken</h3><p>Science becomes language you can repeat to someone else.</p></div>
-      <div class="p"><h3>Unshockable</h3><p>No judgment about failed diets, setbacks or starting over.</p></div>
-      <div class="p"><h3>Steady</h3><p>Calm confidence, with no hype and no urgency theater.</p></div>
-    </div>
+<section class="s tight">
+  <div class="wrap narrow">
+    <h2 class="mb-l" data-rv>{h2}</h2>
+    <p class="run" data-rv><b>Warm.</b> She understands the mirror, the
+    frustration and the fear. <b>Plain-spoken.</b> Science becomes language you
+    can repeat to someone else. <b>Unshockable.</b> No judgment about failed
+    diets, setbacks or starting over. <b>Steady.</b> Calm confidence, with no
+    hype and no urgency theater.</p>
+    <p class="run-after">Expert enough to be trusted. Human enough to be told
+    the truth.</p>
   </div>
 </section>
-""".format(eyebrow=eyebrow('Credibility'),
-           h=lines('Knowledge made', 'practical.'),
-           eyebrow2=eyebrow('Personality'),
+""".format(h=lines('Knowledge made', 'practical.'),
            h2=lines('The knowledgeable', 'friend.')))
 
-    # the stage
+    # The competition photographs. Three real credentials at three different
+    # widths and three different vertical offsets, because three equal squares
+    # in a row is the shape a layout takes when nobody chose it. The crops stay
+    # square: these source frames are composites of two poses, and cropping them
+    # to a portrait or landscape ratio cuts one of the figures in half.
     b.append(u"""
-<section class="s bg-oat" data-sec="The stage">
+<section class="s bg-oat">
   <div class="wrap">
-    <div class="head center">
-      {eyebrow}
-      <h2 data-rv="lines">{h}</h2>
-      <p class="lede" data-rv style="--d:140ms">I competed in bodybuilding and I once placed first. Not
-      because the trophy matters to you, but because that is where I learned
-      exactly what food does to a body, and how precisely it can be adjusted.</p>
+    <div class="ed">
+      <div class="ed-head">
+        <h2 data-rv>{h}</h2>
+        <p class="lede">I competed in bodybuilding and I once placed first. Not
+        because the trophy matters to you, but because that is where I learned
+        exactly what food does to a body, and how precisely it can be adjusted.</p>
+      </div>
     </div>
-    <div class="strip3" data-stagger="140">
+    <div class="uneven">
       {i1}{i2}{i3}
     </div>
-    <p class="center mt-l" data-rv style="max-width:760px;margin-left:auto;margin-right:auto">
-      You will never be asked to train like this. That is not the point and it is
-      not the program. The point is that I learned nutrition at the level where
-      every gram counted, so I can tell you which parts genuinely matter in a
-      normal week and which parts you can stop worrying about.
-    </p>
+    <p class="narrow-p">You will never be asked to train like this. That is not
+    the point and it is not the program. The point is that I learned nutrition at
+    the level where every gram counted, so I can tell you which parts genuinely
+    matter in a normal week and which parts you can stop worrying about.</p>
   </div>
 </section>
 
-<section class="s" data-sec="In the gym">
+<section class="s tight">
   <div class="wrap">
-    <div class="head center">
-      {eyebrow2}
-      <h2 data-rv="lines">{h2}</h2>
-    </div>
-    <div class="reels" data-stagger="130">
+    <h2 class="mb-l" data-rv>{h2}</h2>
+    <div class="reels">
       <figure class="reel"><video controls preload="none" playsinline poster="assets/img/betty-carbs-poster.jpg">
         <source src="assets/video/betty-carbs.mp4" type="video/mp4"></video>
         <figcaption>Making off-season carbs work</figcaption></figure>
@@ -877,28 +871,22 @@ def build_about():
   </div>
 </section>
 
-<section class="s bg-forest">
-  <div class="wrap narrow center">
-    {eyebrow3}
-    <p class="serif-quote" data-rv style="color:#fff">
+<section class="s bg-forest tight">
+  <div class="wrap narrow">
+    <p class="big light" data-rv>
       I work with women who have tried diets, supplements and weight-loss trends
       but still struggle with stubborn weight and belly fat. Over 16 weeks, I
       help them lose weight sustainably, fit into their clothes again, and feel
       confident in their bodies.
     </p>
-    <p class="mt-l" data-rv style="--d:160ms;font-size:.76rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--sage)">
-      Beatrice &ldquo;Betty&rdquo; Mwihaki Igeria
-    </p>
+    <p class="sig">Beatrice &ldquo;Betty&rdquo; Mwihaki Igeria</p>
   </div>
 </section>
-""".format(eyebrow=eyebrow('Where the knowledge came from', 'center'),
-           h=lines('I have stood', 'on that stage.'),
-           i1=img('betty-stage.jpg', 'Betty competing on stage at a bodybuilding show', 'sq'),
-           i2=img('betty-backstage.jpg', 'Betty warming up backstage before a competition', 'sq'),
-           i3=img('betty-track.jpg', 'Betty at the start line of a running track', 'sq'),
-           eyebrow2=eyebrow('In the gym', 'center'),
-           h2=lines('I do not just teach this.', 'I live it.'),
-           eyebrow3=eyebrow('Positioning', 'center')))
+""".format(h=lines('I have stood', 'on that stage.'),
+           i1=img('betty-stage.jpg', 'Betty competing on stage at a bodybuilding show', 'u1', '1/1'),
+           i2=img('betty-backstage.jpg', 'Betty warming up backstage before a competition', 'u2', '1/1'),
+           i3=img('betty-track.jpg', 'Betty at the start line of a running track', 'u3', '1/1'),
+           h2=lines('I do not just teach this. I live it.')))
 
     b.append(GUIDE)
     b.append(cta(['Let us talk about', 'your week.'],
@@ -917,82 +905,86 @@ def build_about():
 def build_services():
     b = []
     b.append(u"""
-<section class="phero" data-sec="The method">
+<section class="phero">
   <div class="wrap wide">
     <div class="phero-grid">
       <div>
-        {eyebrow}
         <h1 data-rv="lines">{h}</h1>
-        <p class="lede" data-rv style="--d:560ms">A practical 16-week weight-loss and nutrition coaching
+        <p class="lede">A practical 16-week weight-loss and nutrition coaching
         journey. Five phases, one clear lane, and a set of skills you keep.</p>
-        <div class="actions" data-rv style="--d:660ms">{b1}{tl}</div>
+        <div class="actions">{b1}{tl}</div>
       </div>
       <div>{im}</div>
     </div>
   </div>
-  <div class="shapes" aria-hidden="true"><span class="shape s1 d1"></span><span class="shape s2 d2"></span></div>
 </section>
 
-<section class="s method" id="phases" data-sec="Five phases">
+<section class="s" id="phases">
   <div class="wrap">
-    <div class="head">
-      {eyebrow2}
-      <h2 data-rv="lines">{h2}</h2>
-      <p class="lede" data-rv style="--d:140ms">Each phase does one job. Nothing moves until the one
-      before it is holding.</p>
+    <div class="ed">
+      <div class="ed-head">
+        <h2 data-rv>{h2}</h2>
+        <p class="lede">Each phase does one job. Nothing moves until the one
+        before it is holding.</p>
+        {n}
+      </div>
+      <div class="ed-body" data-rv>
+{phases}
+      </div>
     </div>
-{arc}
-{rails}
   </div>
 </section>
-""".format(eyebrow=eyebrow('The signature offer'),
-           h=lines('The Food', 'Clarity Method'),
+""".format(h=lines('The Food', 'Clarity Method'),
            b1=btn(BOOK, 'Book a free call', 'clay'),
            tl=tlink('#phases', 'See the five phases'),
            im=hero_img('food-portions.jpg',
                        'Portioned, home-cooked meals prepared for the week',
                        'wide', '1.2/1'),
-           eyebrow2=eyebrow('How it runs'),
            h2=lines('Five phases,', 'sixteen weeks.'),
-           arc=arc_block(), rails=rails_block(full=True, cls='rails-full')))
+           n=note('By the end you should not need me. That is the design.'),
+           phases=phase_list(full=True)))
 
     b.append(u"""
-<section class="s bg-oat" data-sec="Week to week">
+<section class="s tight bg-oat">
   <div class="wrap">
-    <div class="head center">
-      {eyebrow}
-      <h2 data-rv="lines">{h}</h2>
-    </div>
-    <div class="steps" data-stagger="120">
-      <div class="step"><span class="n">01</span><h4>We talk first</h4>
-        <p>A free 20-minute call. I want to hear what you have tried, what
-        happened, and what you actually want your body to feel like.</p></div>
-      <div class="step"><span class="n">02</span><h4>We build your structure</h4>
-        <p>Not a printed meal plan. A framework for your kitchen, your budget
-        and your week, with the reasoning explained every time.</p></div>
-      <div class="step"><span class="n">03</span><h4>We check in weekly</h4>
-        <p>Accountability, honest feedback and adjustments as your body
-        responds. This is where most women stop guessing.</p></div>
-      <div class="step"><span class="n">04</span><h4>You take it with you</h4>
-        <p>By week sixteen you should not need me. You can read a label, judge
-        a portion and feed yourself for life.</p></div>
+    <div class="ed">
+      <div class="ed-head">
+        <h2 data-rv>{h}</h2>
+      </div>
+      <div class="ed-body">
+        <dl class="deflist wide-dl" data-rv>
+          <dt>We talk first</dt>
+          <dd>A free 20-minute call. I want to hear what you have tried, what
+          happened, and what you actually want your body to feel like.</dd>
+          <dt>We build your structure</dt>
+          <dd>Not a printed meal plan. A framework for your kitchen, your budget
+          and your week, with the reasoning explained every time.</dd>
+          <dt>We check in weekly</dt>
+          <dd>Accountability, honest feedback and adjustments as your body
+          responds. This is where most women stop guessing.</dd>
+          <dt>You take it with you</dt>
+          <dd>By week sixteen you should not need me. You can read a label, judge
+          a portion and feed yourself for life.</dd>
+        </dl>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="s" data-sec="Ways to work">
+<section class="s">
   <div class="wrap">
-    <div class="head center">
-      {eyebrow2}
-      <h2 data-rv="lines">{h2}</h2>
-      <p class="lede" data-rv style="--d:140ms">Every one of them starts with the same free
-      conversation.</p>
+    <div class="ed">
+      <div class="ed-head">
+        <h2 data-rv>{h2}</h2>
+        <p class="lede">Every one of them starts with the same free
+        conversation.</p>
+      </div>
     </div>
-    <div class="tiers" data-stagger="110">
+    <div class="tiers">
       <div class="tier">
         <span class="flag">Start here</span>
         <h3>Free consultation</h3>
-        <p class="price">Free &middot; 20 minutes</p>
+        <p class="price">Free, 20 minutes</p>
         <ul>
           <li>What you have already tried</li>
           <li>What is actually getting in the way</li>
@@ -1028,22 +1020,15 @@ def build_services():
         {t3}
       </div>
     </div>
-    <div class="todo">
-      <strong>Draft note for Betty:</strong> pricing is deliberately left as
-      &ldquo;shared on your call&rdquo; until you confirm your numbers. Send the figures
-      and we will put them live. The Nutrition Reset is a suggested second offer,
-      so tell us to keep, change or remove it.
-    </div>
   </div>
 </section>
 
-<section class="s bg-oat" data-sec="Is it you">
+<section class="s bg-oat">
   <div class="wrap">
     <div class="split">
       <div class="split-copy">
-        {eyebrow3}
-        <h2 data-rv="lines">{h3}</h2>
-        <ul class="checks" data-rv="fade" data-stagger="90">
+        <h2 data-rv>{h3}</h2>
+        <ul class="checks">
           <li>You have tried the diets, the teas, the supplements, the waist trainers, and none of it stuck.</li>
           <li>Your clothes stopped fitting the way they used to and you cannot work out what changed.</li>
           <li>You want to understand nutrition, not be handed a plan you cannot maintain.</li>
@@ -1056,29 +1041,22 @@ def build_services():
   </div>
 </section>
 
-<section class="s" id="faq" data-sec="Questions">
+<section class="s" id="faq">
   <div class="wrap narrow">
-    <div class="head center">
-      {eyebrow4}
-      <h2 data-rv="lines">{h4}</h2>
-    </div>
+    <h2 class="mb-l" data-rv>{h4}</h2>
     <div class="faq">
 {faq}
     </div>
   </div>
 </section>
-""".format(eyebrow=eyebrow('The process', 'center'),
-           h=lines('How the sixteen', 'weeks actually run.'),
-           eyebrow2=eyebrow('Choose your starting point', 'center'),
+""".format(h=lines('How the sixteen', 'weeks actually run.'),
            h2=lines('Three ways to', 'work together.'),
            t1=btn(BOOK, 'Book the call', 'ghost'),
            t2=btn(BOOK, 'Apply on a free call', 'clay'),
            t3=btn(BOOK, 'Ask about it', 'ghost'),
-           eyebrow3=eyebrow('Who this is for'),
            h3=lines('This is for you if.'),
            im=img('betty-cable.jpg', 'Betty training at a cable machine', 'tall'),
-           eyebrow4=eyebrow('Before you book', 'center'),
-           h4=lines('Questions I get', 'every week.'),
+           h4=lines('Questions I get every week.'),
            faq='\n'.join(faq_item(i, q, a) for i, (q, a) in enumerate(FAQ))))
 
     b.append(GUIDE)
@@ -1134,24 +1112,22 @@ def faq_item(i, q, a):
 def build_shop():
     b = []
     b.append(u"""
-<section class="phero" data-sec="Resources">
+<section class="phero">
   <div class="wrap wide">
     <div class="phero-grid">
       <div>
-        {eyebrow}
         <h1 data-rv="lines">{h}</h1>
-        <p class="lede" data-rv style="--d:560ms">Short, plain-English guides you can start using this
+        <p class="lede">Short, plain-English guides you can start using this
         week. One clear teaching idea at a time.</p>
       </div>
       <div>{im}</div>
     </div>
   </div>
-  <div class="shapes" aria-hidden="true"><span class="shape s1 d1"></span><span class="shape s2 d2"></span></div>
 </section>
 
-<section class="s" data-sec="Guides">
+<section class="s">
   <div class="wrap">
-    <div class="products" data-stagger="120">
+    <div class="products">
       <div class="product">
         {i1}
         <div class="product-body">
@@ -1184,16 +1160,9 @@ def build_shop():
         </div>
       </div>
     </div>
-    <div class="todo">
-      <strong>Draft note for Betty:</strong> only the free guide is confirmed.
-      The two &ldquo;coming soon&rdquo; products are placeholders so the page is not
-      empty. Tell us what you actually want to sell and at what price and we will
-      build a real checkout.
-    </div>
   </div>
 </section>
-""".format(eyebrow=eyebrow('Resources'),
-           h=lines('Understand your', 'food, one idea', 'at a time.'),
+""".format(h=lines('Understand your', 'food, one idea', 'at a time.'),
            im=hero_img('guide-table.jpg',
                        'A food diary open on a table beside an apple',
                        'wide', '1.2/1'),
@@ -1241,49 +1210,59 @@ POSTS = [
 
 
 def build_blog():
+    """The first article runs wide, the rest run small. That is how an index
+    page looks when a person laid it out."""
+    lead = POSTS[0]
+    rest = POSTS[1:]
+
+    lead_html = u"""      <article class="post lead">
+        {im}
+        <div>
+          <p class="cat">{cat}</p>
+          <h3>{title}</h3>
+          <p>{dek}</p>
+          <span class="more">Coming soon</span>
+        </div>
+      </article>""".format(im=img(lead[3], '', '', '1.6/1'), cat=lead[0],
+                           title=lead[1], dek=lead[2])
+
     cards = []
-    for cat, title, dek, im in POSTS:
+    for cat, title, dek, im in rest:
         cards.append(u"""      <article class="post">
         {im}
         <p class="cat">{cat}</p>
         <h3>{title}</h3>
         <p>{dek}</p>
         <span class="more">Coming soon</span>
-      </article>""".format(im=img(im, '', '', '1.42/1'), cat=cat, title=title, dek=dek))
+      </article>""".format(im=img(im, '', '', '1.42/1'), cat=cat, title=title,
+                           dek=dek))
 
     b = [u"""
-<section class="phero" data-sec="Journal">
+<section class="phero">
   <div class="wrap wide">
     <div class="phero-grid">
       <div>
-        {eyebrow}
         <h1 data-rv="lines">{h}</h1>
-        <p class="lede" data-rv style="--d:560ms">Straight answers on food, portions and progress. No
+        <p class="lede">Straight answers on food, portions and progress. No
         trends, no hype, and no jargon without a translation.</p>
       </div>
       <div>{im}</div>
     </div>
   </div>
-  <div class="shapes" aria-hidden="true"><span class="shape s1 d1"></span><span class="shape s2 d2"></span></div>
 </section>
 
-<section class="s" data-sec="Articles">
+<section class="s">
   <div class="wrap">
-    <div class="posts" data-stagger="90">
+{lead}
+    <div class="posts">
 {cards}
-    </div>
-    <div class="todo">
-      <strong>Draft note for Betty:</strong> these six titles come from the
-      keywords in your niche form, so they are the searches your audience is
-      actually making. Nothing is published yet. Write them, or record them and
-      we will transcribe, and each card becomes a real article page.
     </div>
   </div>
 </section>
-""".format(eyebrow=eyebrow('The journal'),
-           h=lines('No nutrition', 'noise. Just what', 'to do next.'),
+""".format(h=lines('No nutrition', 'noise. Just what', 'to do next.'),
            im=hero_img('food-prep.jpg',
                        'Balanced portioned meals prepared for the week', 'sq'),
+           lead=lead_html,
            cards='\n'.join(cards))]
 
     b.append(GUIDE)
@@ -1302,31 +1281,28 @@ def build_blog():
 # ============================================================= contact.html ==
 def build_contact():
     b = [u"""
-<section class="phero" data-sec="Start here">
+<section class="phero">
   <div class="wrap wide">
     <div class="phero-grid">
       <div>
-        {eyebrow}
         <h1 data-rv="lines">{h}</h1>
-        <p class="lede" data-rv style="--d:560ms">A free 20-minute conversation. No pressure and no
+        <p class="lede">A free 20-minute conversation. No pressure and no
         pitch you have to sit through, just an honest answer on whether I can
         help.</p>
       </div>
       <div>{im}</div>
     </div>
   </div>
-  <div class="shapes" aria-hidden="true"><span class="shape s1 d1"></span><span class="shape s2 d2"></span></div>
 </section>
 
-<section class="s" id="book" data-sec="Book a call">
+<section class="s" id="book">
   <div class="wrap">
     <div class="contact-grid">
       <div>
-        {eyebrow2}
-        <h2 data-rv="lines">{h2}</h2>
-        <p data-rv style="--d:140ms">Fill this in and I will come back to you with a time. If you
+        <h2 data-rv>{h2}</h2>
+        <p>Fill this in and I will come back to you with a time. If you
         would rather just email, that works too.</p>
-        <form action="https://formspree.io/f/REPLACE_ME" method="POST" data-rv style="--d:200ms">
+        <form action="https://formspree.io/f/REPLACE_ME" method="POST">
           <div class="field">
             <label for="c-name">Your name</label>
             <input id="c-name" name="name" type="text" autocomplete="name" required>
@@ -1352,13 +1328,8 @@ def build_contact():
           <input type="hidden" name="_subject" value="New consultation request - Betty">
           <button class="btn btn-clay" type="submit">Request my free call</button>
         </form>
-        <div class="todo">
-          <strong>Draft note:</strong> this form is not wired up yet. Point it at
-          a Formspree endpoint, or drop in a Calendly or TidyCal embed, and it
-          goes live.
-        </div>
       </div>
-      <aside class="info-block" data-rv="right" style="--d:180ms">
+      <aside class="info-block">
         <h3>Reach Betty directly</h3>
         <dl>
           <dt>Email</dt>
@@ -1376,11 +1347,9 @@ def build_contact():
     </div>
   </div>
 </section>
-""".format(eyebrow=eyebrow('Start here'),
-           h=lines('Let us talk about', 'your week, not', 'another diet.'),
+""".format(h=lines('Let us talk about', 'your week, not', 'another diet.'),
            im=hero_img('betty-street.jpg',
                        'Betty out walking on a bright street', 'sq'),
-           eyebrow2=eyebrow('Book your consultation'),
            h2=lines('Tell me where you', 'are right now.'))]
 
     b.append(GUIDE)
@@ -1403,11 +1372,23 @@ PAGES = {
     'contact.html': build_contact,
 }
 
+# Things that must never reach a public page again.
+FORBIDDEN = [
+    (u'—', 'em dash'),
+    (u'–', 'en dash'),
+    ('Draft note', 'internal draft note'),
+    ('placeholder-quote', 'placeholder testimonial'),
+    ('testimonial goes here', 'placeholder testimonial'),
+]
+
 if __name__ == '__main__':
-    for name, fn in PAGES.items():
+    for name, fn in sorted(PAGES.items()):
         html = fn()
-        for bad in (u'—', u'–'):
-            assert bad not in html, 'dash found in ' + name
+        for bad, why in FORBIDDEN:
+            assert bad not in html, '%s found in %s' % (why, name)
+        eyebrows = html.count('class="eyebrow')
+        assert eyebrows <= 2, '%d eyebrows on %s, budget is 2' % (eyebrows, name)
         with io.open(os.path.join(OUT, name), 'w', encoding='utf-8', newline='\n') as f:
             f.write(html)
-        print('%-15s %6d bytes' % (name, len(html.encode('utf-8'))))
+        print('%-15s %6d bytes  %d eyebrow(s)'
+              % (name, len(html.encode('utf-8')), eyebrows))
