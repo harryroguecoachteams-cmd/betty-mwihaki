@@ -20,6 +20,8 @@ OUT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 # Pexels ids, downloaded into _stock/ as <name>.jpg before running:
 #   https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?auto=compress&cs=tinysrgb&w=1400
+STOCK_IN_USE = False
+
 PEXELS = {
     'meals-glass': 4929677, 'meal-prep': 30635717, 'ingredients': 4963581,
     'bowl': 566564, 'guide-table': 12499375,
@@ -120,9 +122,17 @@ def main():
     save(cover(shot(13), 1.00), 'betty-stage.jpg')
     save(cover(shot(7), 1.00), 'betty-backstage.jpg')
     save(cover(shot(11), 1.00), 'betty-track.jpg')
+    # Screenshot_1: a trail race, bib 259, other ordinary runners in frame. The
+    # least physique-posed image in the whole library and the only one that
+    # shows her among other people, so it carries the About page's line about
+    # never being asked to train like this.
+    save(cover(shot(1), 1.30, vfocus=0.46), 'betty-race.jpg', q=88)
 
-    if not os.path.isdir(STOCK):
-        print('no _build/_stock, skipping the licensed stock rebuild')
+    # As of 7 Sep 2026 no page places a stock photograph. Every image on the
+    # site is Betty's own. This half only runs if _stock is present AND
+    # STOCK_IN_USE is flipped back on; the ids above are kept as the record.
+    if not STOCK_IN_USE or not os.path.isdir(STOCK):
+        print('licensed stock is unused by the site, skipping')
         return
 
     # ---- food, teaching and reader photography ----------------------------

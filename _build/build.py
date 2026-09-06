@@ -41,6 +41,17 @@ OUT = os.path.abspath(os.path.join(HERE, '..'))
 # Internal notes never ship. Flip to True only for a local review build.
 DRAFT_NOTES = False
 
+# Both forms post here. Create a form in Betty's Formspree account, paste the
+# full endpoint below, rebuild, and the opt-in and the consultation form go live
+# everywhere at once.
+#
+# While this is None the forms are replaced by a mailto button, so a visitor
+# still reaches her inbox. That is a downgrade, but the previous build posted to
+# `formspree.io/f/REPLACE_ME`, which serves a 404 to a real prospect and loses
+# the lead silently. FORBIDDEN blocks that placeholder from ever shipping again.
+FORM_ENDPOINT = None          # e.g. 'https://formspree.io/f/xdkogqyz'
+EMAIL = 'beatricemwihaki@yahoo.com'
+
 NAV = [
     ('about.html', 'About'),
     ('services.html', 'The Method'),
@@ -118,6 +129,26 @@ def figure(src, alt, caption, cls='', ar='', pos=''):
 
 def todo(html):
     return html if DRAFT_NOTES else ''
+
+
+def mailto(subject, label, kind='clay'):
+    return btn('mailto:%s?subject=%s' % (EMAIL, subject.replace(' ', '%20')),
+               label, kind)
+
+
+# The opt-in, and what stands in for it until FORM_ENDPOINT is set.
+if FORM_ENDPOINT:
+    OPTIN = u'''<form class="optin" action="%s" method="POST">
+          <input type="text" name="name" placeholder="First name" aria-label="First name" required>
+          <input type="email" name="email" placeholder="Your email address" aria-label="Email address" required>
+          <input type="hidden" name="_subject" value="New download - The label-reading guide for real life">
+          <button class="btn btn-clay" type="submit">Send it to me</button>
+        </form>
+        <p class="form-note">No spam. Unsubscribe any time.</p>''' % FORM_ENDPOINT
+else:
+    OPTIN = u'''<div class="actions">%s</div>
+        <p class="form-note">Email me and I will send it straight back.</p>''' % (
+        mailto('The label-reading guide for real life', 'Ask me for the guide'))
 
 
 # ------------------------------------------------------------------ shell ---
@@ -262,13 +293,7 @@ GUIDE = u"""
         that order, and you can judge almost any packet in the aisle. This is the
         short, plain-English guide I wish every woman had before she started
         another diet.</p>
-        <form class="optin" action="https://formspree.io/f/REPLACE_ME" method="POST">
-          <input type="text" name="name" placeholder="First name" aria-label="First name" required>
-          <input type="email" name="email" placeholder="Your email address" aria-label="Email address" required>
-          <input type="hidden" name="_subject" value="New download - The label-reading guide for real life">
-          <button class="btn btn-clay" type="submit">Send it to me</button>
-        </form>
-        <p class="form-note">No spam. Unsubscribe any time.</p>
+        {optin}
       </div>
       <div class="split-media">
         <div class="three" aria-hidden="true">
@@ -283,6 +308,7 @@ GUIDE = u"""
 </section>
 """.format(eyebrow=eyebrow('Free guide'),
            h=lines('The label-reading', 'guide for real life'),
+           optin=OPTIN,
            n=note('Three numbers, in that order.'))
 
 
@@ -847,10 +873,14 @@ def build_about():
     <div class="uneven">
       {i1}{i2}{i3}
     </div>
-    <p class="narrow-p">You will never be asked to train like this. That is not
-    the point and it is not the program. The point is that I learned nutrition at
-    the level where every gram counted, so I can tell you which parts genuinely
-    matter in a normal week and which parts you can stop worrying about.</p>
+    <div class="pair">
+      {i4}
+      <p class="narrow-p">You will never be asked to train like this. That is not
+      the point and it is not the program. The point is that I learned nutrition
+      at the level where every gram counted, so I can tell you which parts
+      genuinely matter in a normal week and which parts you can stop worrying
+      about.</p>
+    </div>
   </div>
 </section>
 
@@ -886,6 +916,9 @@ def build_about():
            i1=img('betty-stage.jpg', 'Betty competing on stage at a bodybuilding show', 'u1', '1/1'),
            i2=img('betty-backstage.jpg', 'Betty warming up backstage before a competition', 'u2', '1/1'),
            i3=img('betty-track.jpg', 'Betty at the start line of a running track', 'u3', '1/1'),
+           i4=figure('betty-race.jpg',
+                     'Running a trail race with other runners on the path behind',
+                     'A trail race, bib 259.', '', '1.3/1'),
            h2=lines('I do not just teach this. I live it.')))
 
     b.append(GUIDE)
@@ -905,16 +938,15 @@ def build_about():
 def build_services():
     b = []
     b.append(u"""
-<section class="phero">
-  <div class="wrap wide">
-    <div class="phero-grid">
+<section class="phero type">
+  <div class="wrap">
+    <div class="type-hero">
+      <h1 data-rv="lines">{h}</h1>
       <div>
-        <h1 data-rv="lines">{h}</h1>
         <p class="lede">A practical 16-week weight-loss and nutrition coaching
         journey. Five phases, one clear lane, and a set of skills you keep.</p>
         <div class="actions">{b1}{tl}</div>
       </div>
-      <div>{im}</div>
     </div>
   </div>
 </section>
@@ -937,9 +969,6 @@ def build_services():
 """.format(h=lines('The Food', 'Clarity Method'),
            b1=btn(BOOK, 'Book a free call', 'clay'),
            tl=tlink('#phases', 'See the five phases'),
-           im=hero_img('food-portions.jpg',
-                       'Portioned, home-cooked meals prepared for the week',
-                       'wide', '1.2/1'),
            h2=lines('Five phases,', 'sixteen weeks.'),
            n=note('By the end you should not need me. That is the design.'),
            phases=phase_list(full=True)))
@@ -1109,7 +1138,24 @@ def faq_item(i, q, a):
 
 
 # ================================================================ shop.html ==
+# The guide's own cover, set in the brand's type rather than photographed. There
+# is no photograph of it because it is not written yet, and a stock food diary
+# beside an apple is exactly the kind of image this pass exists to remove. It is
+# aria-hidden because every word in it is in the heading beside it.
+COVER = u"""<div class="cover" aria-hidden="true">
+          <p class="c-k">Free guide</p>
+          <p class="c-t">The label-reading guide for real life</p>
+          <ul class="c-l"><li>Serving size</li><li>Protein</li><li>Added sugar</li></ul>
+          <p class="c-b">Betty<i></i></p>
+        </div>"""
+
+
 def build_shop():
+    """A library, not a product grid. One resource exists, it is free, and the
+    other two are being written. Three equal cards with three buttons underneath
+    said the opposite. The guide runs as the feature, the other two as entries,
+    and the shared opt-in band is dropped from this page because the guide is
+    already the whole page."""
     b = []
     b.append(u"""
 <section class="phero">
@@ -1118,62 +1164,68 @@ def build_shop():
       <div>
         <h1 data-rv="lines">{h}</h1>
         <p class="lede">Short, plain-English guides you can start using this
-        week. One clear teaching idea at a time.</p>
+        week, one clear teaching idea at a time. There is one so far. It is
+        free, and the next two are being written.</p>
       </div>
-      <div>{im}</div>
+      <div class="cover-slot" data-rv>{cover}</div>
     </div>
   </div>
 </section>
 
-<section class="s">
+<section class="s" id="guide">
   <div class="wrap">
-    <div class="products">
-      <div class="product">
-        {i1}
-        <div class="product-body">
-          <h3>The label-reading guide for real life</h3>
-          <p class="price">Free</p>
-          <p>Serving size, protein, added sugar. Three numbers in that order and
-          you can judge almost any packet in the aisle, without standing in the
-          store doing math.</p>
-          {b1}
-        </div>
+    <div class="split lean">
+      <div class="split-copy">
+        {eyebrow}
+        <h2 data-rv>{h2}</h2>
+        <p class="lede">Serving size, protein, added sugar. Three numbers, in
+        that order, and you can judge almost any packet in the aisle. This is the
+        short, plain-English guide I wish every woman had before she started
+        another diet.</p>
+        {optin}
       </div>
-      <div class="product">
-        {i2}
-        <div class="product-body">
+      <div class="split-media">
+        <div class="three" aria-hidden="true">
+          <p>Serving size</p>
+          <p>Protein</p>
+          <p>Added sugar</p>
+        </div>
+        {n}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="s tight bg-oat">
+  <div class="wrap">
+    <p class="k-head">Coming next</p>
+    <div class="library">
+      <article class="entry">
+        <div class="e-k"><span class="more">Being written</span></div>
+        <div>
           <h3>The portion handbook</h3>
-          <p class="price">Coming soon</p>
           <p>How to judge a portion without weighing every meal, using your own
           hands, your own plates and the food you already buy.</p>
-          {b2}
         </div>
-      </div>
-      <div class="product">
-        {i3}
-        <div class="product-body">
+      </article>
+      <article class="entry">
+        <div class="e-k"><span class="more">Being written</span></div>
+        <div>
           <h3>Four weeks of real meals</h3>
-          <p class="price">Coming soon</p>
           <p>A month of straightforward, affordable meals built on the same
           principles I coach, with the reasoning behind every plate.</p>
-          {b3}
         </div>
-      </div>
+      </article>
     </div>
   </div>
 </section>
 """.format(h=lines('Understand your', 'food, one idea', 'at a time.'),
-           im=hero_img('guide-table.jpg',
-                       'A food diary open on a table beside an apple',
-                       'wide', '1.2/1'),
-           i1=img('guide-table.jpg', 'A food diary open on a table', '', '1.2/1'),
-           i2=img('food-whole.jpg', 'Fresh whole ingredients arranged on a plate', '', '1.2/1'),
-           i3=img('food-bowl.jpg', 'A balanced breakfast bowl of yogurt and berries', '', '1.2/1'),
-           b1=btn('index.html#guide', 'Download free', 'clay'),
-           b2=btn('index.html#guide', 'Tell me when it is ready', 'ghost'),
-           b3=btn('index.html#guide', 'Join the waitlist', 'ghost')))
+           cover=COVER,
+           eyebrow=eyebrow('Free guide'),
+           h2=lines('The label-reading', 'guide for real life'),
+           optin=OPTIN,
+           n=note('Three numbers, in that order.')))
 
-    b.append(GUIDE)
     b.append(cta(['Not sure where', 'to start?'],
                  'Book a free 20-minute call and I will point you at the right '
                  'thing, even if that turns out not to be me.'))
@@ -1190,80 +1242,77 @@ def build_shop():
 POSTS = [
     ('Food clarity', 'Why you are eating healthy and still not losing weight',
      'The four most common reasons the scale will not move, and not one of them '
-     'is that you are not trying hard enough.', 'journal-01.jpg'),
+     'is that you are not trying hard enough.'),
     ('Food clarity', 'What weight-loss medications do, and what they do not teach you',
      'Why so many women are reaching for them, what changes when you stop, and '
-     'what the education route genuinely asks of you.', 'journal-02.jpg'),
+     'what the education route genuinely asks of you.'),
     ('Label literacy', 'How to read a nutrition label in thirty seconds',
      'Serving size, protein, added sugar. Three numbers, in this order, and you '
-     'can judge almost any packet in the aisle.', 'journal-03.jpg'),
+     'can judge almost any packet in the aisle.'),
     ('Over 40', 'Stubborn belly fat after 40: what actually changed',
      'Your body did not betray you. Here is what shifts as we get older, and '
-     'what to do about it that is not another crash diet.', 'journal-04.jpg'),
+     'what to do about it that is not another crash diet.'),
     ('Portions', 'What a portion really looks like on your plate',
      'You do not need a food scale on the counter for the rest of your life. '
-     'You need a reliable way to eyeball it.', 'journal-05.jpg'),
+     'You need a reliable way to eyeball it.'),
     ('Simple action', 'Confused about what to eat? Start with these four questions',
      'Before you change a single thing about how you eat, answer these. They '
-     'will save you months of guessing.', 'journal-06.jpg'),
+     'will save you months of guessing.'),
 ]
 
 
 def build_blog():
-    """The first article runs wide, the rest run small. That is how an index
-    page looks when a person laid it out."""
+    """A contents page rather than a grid of post cards. The six thumbnails were
+    licensed stock photographs of other women, which on an index of Betty's own
+    writing was the loudest tell left on the site, and her library has no food or
+    kitchen photography to replace them with. So the journal runs on type: one
+    lead story at full weight, then the rest as entries."""
     lead = POSTS[0]
     rest = POSTS[1:]
 
-    lead_html = u"""      <article class="post lead">
-        {im}
-        <div>
+    entries = []
+    for cat, title, dek in rest:
+        entries.append(u"""      <article class="entry">
+        <div class="e-k">
           <p class="cat">{cat}</p>
-          <h3>{title}</h3>
-          <p>{dek}</p>
           <span class="more">Coming soon</span>
         </div>
-      </article>""".format(im=img(lead[3], '', '', '1.6/1'), cat=lead[0],
-                           title=lead[1], dek=lead[2])
-
-    cards = []
-    for cat, title, dek, im in rest:
-        cards.append(u"""      <article class="post">
-        {im}
-        <p class="cat">{cat}</p>
-        <h3>{title}</h3>
-        <p>{dek}</p>
-        <span class="more">Coming soon</span>
-      </article>""".format(im=img(im, '', '', '1.42/1'), cat=cat, title=title,
-                           dek=dek))
+        <div>
+          <h3>{title}</h3>
+          <p>{dek}</p>
+        </div>
+      </article>""".format(cat=cat, title=title, dek=dek))
 
     b = [u"""
-<section class="phero">
-  <div class="wrap wide">
-    <div class="phero-grid">
+<section class="phero type">
+  <div class="wrap">
+    <div class="type-hero">
+      <h1 data-rv="lines">{h}</h1>
       <div>
-        <h1 data-rv="lines">{h}</h1>
         <p class="lede">Straight answers on food, portions and progress. No
         trends, no hype, and no jargon without a translation.</p>
       </div>
-      <div>{im}</div>
     </div>
   </div>
 </section>
 
 <section class="s">
   <div class="wrap">
-{lead}
-    <div class="posts">
-{cards}
+    <article class="lead-story" data-rv>
+      <p class="cat">{lcat}</p>
+      <h2>{ltitle}</h2>
+      <p class="lede">{ldek}</p>
+      <span class="more">Coming soon</span>
+    </article>
+    <p class="k-head">Also in the journal</p>
+    <div class="library">
+{entries}
     </div>
   </div>
 </section>
 """.format(h=lines('No nutrition', 'noise. Just what', 'to do next.'),
-           im=hero_img('food-prep.jpg',
-                       'Balanced portioned meals prepared for the week', 'sq'),
-           lead=lead_html,
-           cards='\n'.join(cards))]
+           lcat=lead[0], ltitle=lead[1], ldek=lead[2],
+           entries='\n'.join(entries))]
 
     b.append(GUIDE)
     b.append(cta(['Would you rather', 'just talk it through?'],
@@ -1278,31 +1327,9 @@ def build_blog():
         ''.join(b))
 
 
-# ============================================================= contact.html ==
-def build_contact():
-    b = [u"""
-<section class="phero">
-  <div class="wrap wide">
-    <div class="phero-grid">
-      <div>
-        <h1 data-rv="lines">{h}</h1>
-        <p class="lede">A free 20-minute conversation. No pressure and no
-        pitch you have to sit through, just an honest answer on whether I can
-        help.</p>
-      </div>
-      <div>{im}</div>
-    </div>
-  </div>
-</section>
 
-<section class="s" id="book">
-  <div class="wrap">
-    <div class="contact-grid">
-      <div>
-        <h2 data-rv>{h2}</h2>
-        <p>Fill this in and I will come back to you with a time. If you
-        would rather just email, that works too.</p>
-        <form action="https://formspree.io/f/REPLACE_ME" method="POST">
+# ============================================================= contact.html ==
+CONTACT_FORM = u'''<form action="%s" method="POST">
           <div class="field">
             <label for="c-name">Your name</label>
             <input id="c-name" name="name" type="text" autocomplete="name" required>
@@ -1327,7 +1354,43 @@ def build_contact():
           </div>
           <input type="hidden" name="_subject" value="New consultation request - Betty">
           <button class="btn btn-clay" type="submit">Request my free call</button>
-        </form>
+        </form>''' % (FORM_ENDPOINT or '')
+
+CONTACT_INTRO = ('Fill this in and I will come back to you with a time. If you '
+                 'would rather just email, that works too.')
+
+if not FORM_ENDPOINT:
+    CONTACT_FORM = u"""<div class="actions">%s</div>
+        <p class="form-note">Tell me what you have already tried and what is
+        getting in the way. There is no wrong answer, and no pitch waiting at
+        the other end.</p>""" % mailto(
+        'A free 20-minute consultation', 'Email me to book a call')
+    CONTACT_INTRO = 'Send me a note and I will come back to you with a time.'
+
+
+def build_contact():
+    b = [u"""
+<section class="phero">
+  <div class="wrap wide">
+    <div class="phero-grid">
+      <div>
+        <h1 data-rv="lines">{h}</h1>
+        <p class="lede">A free 20-minute conversation. No pressure and no
+        pitch you have to sit through, just an honest answer on whether I can
+        help.</p>
+      </div>
+      <div>{im}</div>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="book">
+  <div class="wrap">
+    <div class="contact-grid">
+      <div>
+        <h2 data-rv>{h2}</h2>
+        <p>{intro}</p>
+        {form}
       </div>
       <aside class="info-block">
         <h3>Reach Betty directly</h3>
@@ -1350,7 +1413,8 @@ def build_contact():
 """.format(h=lines('Let us talk about', 'your week, not', 'another diet.'),
            im=hero_img('betty-street.jpg',
                        'Betty out walking on a bright street', 'sq'),
-           h2=lines('Tell me where you', 'are right now.'))]
+           h2=lines('Tell me where you', 'are right now.'),
+           intro=CONTACT_INTRO, form=CONTACT_FORM)]
 
     b.append(GUIDE)
 
@@ -1379,6 +1443,14 @@ FORBIDDEN = [
     ('Draft note', 'internal draft note'),
     ('placeholder-quote', 'placeholder testimonial'),
     ('testimonial goes here', 'placeholder testimonial'),
+    ('REPLACE_ME', 'unconfigured form endpoint'),
+    ('journal-0', 'retired stock photograph'),
+    ('food-portions', 'retired stock photograph'),
+    ('food-prep', 'retired stock photograph'),
+    ('food-whole', 'retired stock photograph'),
+    ('food-bowl', 'retired stock photograph'),
+    ('guide-table', 'retired stock photograph'),
+    ('reader-quiet', 'retired stock photograph'),
 ]
 
 if __name__ == '__main__':
@@ -1388,7 +1460,15 @@ if __name__ == '__main__':
             assert bad not in html, '%s found in %s' % (why, name)
         eyebrows = html.count('class="eyebrow')
         assert eyebrows <= 2, '%d eyebrows on %s, budget is 2' % (eyebrows, name)
+        notes = html.count('class="note"')
+        assert notes <= 2, '%d margin notes on %s, budget is 2' % (notes, name)
         with io.open(os.path.join(OUT, name), 'w', encoding='utf-8', newline='\n') as f:
             f.write(html)
-        print('%-15s %6d bytes  %d eyebrow(s)'
-              % (name, len(html.encode('utf-8')), eyebrows))
+        print('%-15s %6d bytes  %d eyebrow(s)  %d note(s)'
+              % (name, len(html.encode('utf-8')), eyebrows, notes))
+    if not FORM_ENDPOINT:
+        print('')
+        print('  ** FORM_ENDPOINT is not set, so both forms are showing a')
+        print('     mailto button rather than a real form. Paste the')
+        print('     Formspree endpoint at the top of this file and rebuild')
+        print('     to put the opt-in and the consultation form back. **')

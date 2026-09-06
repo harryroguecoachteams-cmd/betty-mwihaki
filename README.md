@@ -10,6 +10,10 @@ python _build/build.py     # regenerates all six pages
 python _build/images.py    # rebuilds assets/img from the originals
 ```
 
+**Before launch, set `FORM_ENDPOINT` at the top of `_build/build.py`.** Both
+forms are currently showing a mailto button instead of a real form, and the
+build prints a warning every time it runs until that is fixed. See open item 2.
+
 ---
 
 ## What this is
@@ -124,6 +128,53 @@ the deck.
 Also unchanged: Lora + Inter, the hero messaging, Betty's voice, the navigation,
 her story, the Food Clarity Method content, the gym videos, and every
 accessibility and responsive fix listed below.
+
+---
+
+## Second pass, 7 September 2026: the photography and the last two grids
+
+The first pass fixed the structure and made the remaining **stock photography**
+the loudest thing left. It was: three food shots on Resources, a portioned
+meal-prep hero on The Method, and six thumbnails of other women on the Journal
+index. Alongside Betty running at Cannon Beach and standing in front of her own
+sisal baskets, those read as a template again.
+
+**There is now no stock photography on this site.** Every image is hers. Eleven
+licensed files were deleted and `STOCK_IN_USE` in `images.py` is `False`; the
+Pexels ids stay in that file as the record if any of it is ever wanted back.
+`build.py` refuses to write a page that references one of them by name.
+
+Doing that honestly meant three structural changes rather than three swaps,
+because **her photo library has no food and no kitchen photography at all**. It
+is 21 frames of gym, competition, running, travel and home. "Show Betty
+preparing food, grocery shopping, or reading a label" cannot be done today. See
+open item 6.
+
+- **Resources is a library, not a product grid.** One resource exists, it is
+  free, and the other two are being written; three equal cards with three
+  buttons said the opposite. The guide now runs as the feature with **its own
+  cover**, set in Lora on forest with a clay spine rather than photographed,
+  because the guide is not written yet and a stock food diary beside an apple is
+  the exact image this pass exists to remove. The other two run as entries
+  marked "Being written". The shared opt-in band is dropped from this page: the
+  guide is already the whole page.
+- **The Journal is a contents page.** One lead story at full weight, then five
+  entries as category, headline and standfirst. Losing the thumbnails lost
+  nothing, because they were pictures of strangers.
+- **The Method opens on type.** Its stock meal-prep hero is gone and nothing in
+  her library belongs in a nutrition page's hero, so the offer page opens on its
+  own words, in two columns.
+- **One photograph came back into use.** `Screenshot_1`, a trail race with bib
+  259 and other ordinary runners on the path behind her, is the least
+  physique-posed frame in the library and the only one showing her among other
+  people. It sits on About directly beside the line *"You will never be asked to
+  train like this."* The photograph and its own disclaimer, in one breath.
+
+Three page heroes now carry a photograph, one carries the guide cover, and two
+carry type. That variation is the point.
+
+`build.py` now also asserts that no page contains `REPLACE_ME`, that no page
+names a retired stock file, and that no page carries more than two margin notes.
 
 ---
 
@@ -242,9 +293,13 @@ different shapes, never as quoted testimonials from named people.
 
 1. **Booking link.** Every CTA points at `contact.html#book`. Paste the real
    Calendly or TidyCal URL and find/replace `contact.html#book` in `build.py`.
-2. **Form endpoint.** The opt-in and contact forms post to
-   `https://formspree.io/f/REPLACE_ME`. They do nothing until that is swapped.
-   Or drop in a Calendly / TidyCal embed on `contact.html`.
+2. **Form endpoint. This is the one thing blocking launch.** Set
+   `FORM_ENDPOINT` at the top of `_build/build.py` to a real Formspree endpoint
+   from Betty's account and rebuild. Until then both forms are replaced by a
+   mailto button, which works but converts worse than a form. The previous build
+   posted to `formspree.io/f/REPLACE_ME`, which serves a 404 to a real prospect
+   and loses the lead silently, so the mailto is the lesser of the two. A
+   Calendly or TidyCal embed on `contact.html` would also do the job.
 3. **Client permission** for both result stories, in writing, plus Betty's
    sign-off on the reworded versions. Both stories are hers, reworded to stay
    inside the deck's claims rules on page 28: no diagnosis, cure or reversal
@@ -253,34 +308,35 @@ different shapes, never as quoted testimonials from named people.
    and they go in. The strongest ones name the specific fear she had before
    starting and what actually happened instead, or mention learning to read a
    label. Until then the section stays off the site.
-5. **The new photographs need Betty's confirmation.** Four frames from the
-   3 September 2026 batch are now on the site: the coast, the trail, the aircraft
-   seat and the red dress. Captions describe the scene rather than asserting who
+5. **The new photographs need Betty's confirmation.** Five frames are now on
+   the site that were not before: the coast, the trail, the aircraft seat and the
+   red dress from the 3 September batch, plus the trail race on About. Captions describe the scene rather than asserting who
    is in it. Please confirm (a) that each one is her and she is happy to publish
    it, and (b) that the coast and trail captions are accurate.
-6. **Credentials.** Deck non-negotiable 5 asks for professional scope to be
+6. **Food and kitchen photography does not exist.** Her 21 frames are gym,
+   competition, running, travel and home, with nothing of food, cooking, a
+   grocery aisle, a label or a plate. That is why The Method opens on type and
+   the Journal has no thumbnails. Even phone photographs would change those
+   pages: her own kitchen, a plate she actually ate, a label she was reading, her
+   hands. This is the single highest-value thing she could send.
+7. **Credentials.** Deck non-negotiable 5 asks for professional scope to be
    displayed. Send the certifications and they go on the About page.
-7. **Photo credit.** The studio, cable and competition frames look professionally
+8. **Photo credit.** The studio, cable and competition frames look professionally
    shot. Confirm she can publish them and whether the photographer is credited.
-8. **Pricing.** Still "Investment shared on your call" everywhere. Send the
+9. **Pricing.** Still "Investment shared on your call" everywhere. Send the
    figures and they go live. **The Nutrition Reset** is a suggested second offer,
    so say whether to keep, change or remove it.
-9. **Facebook URL.** Intake gave the display name "Beatrice M" only. The footer
+10. **Facebook URL.** Intake gave the display name "Beatrice M" only. The footer
    links to email instead of a dead Facebook icon.
-10. **The guide itself.** "The label-reading guide for real life" is the named
+11. **The guide itself.** "The label-reading guide for real life" is the named
     lead magnet everywhere. The PDF does not exist yet. The band now shows the
     guide's three headings as type rather than a stock photograph, so a real
     cover or a photo of Betty holding it would slot straight in.
-11. **Journal articles.** Six titles from her own keywords, no article pages.
+12. **Journal articles.** Six titles from her own keywords, no article pages.
     Write them, or record them and we will transcribe.
-12. **Resources page.** Only the free guide is confirmed. **The portion handbook**
+13. **Resources page.** Only the free guide is confirmed. **The portion handbook**
     and **Four weeks of real meals** are placeholders marked "Coming soon" so the
     page is not empty. Tell us what to actually sell and at what price.
-13. **Journal thumbnails are still licensed stock**, and one of them ("Stubborn
-    belly fat after 40") is a blonde woman who does not look like this audience.
-    Four Betty photographs went onto the site in this pass and all four are in
-    use. More of her own photography, or a food or kitchen shot from her own
-    kitchen, would replace these.
 14. **Photo resolution.** The older frames arrived as 460 to 600px screenshots.
     Every placement is capped so the worst upscale is about 1.2x, which holds.
     The four new photographs are downscales and could carry much larger
@@ -288,6 +344,9 @@ different shapes, never as quoted testimonials from named people.
     is generated at 1440px from a 945px original, a 1.52x upscale, because it is
     the site's only full-bleed image.
 15. **Domain.** Currently on `github.io`.
+16. **Email address.** Everything points at `beatricemwihaki@yahoo.com`. Once
+    the real domain exists, a `hello@` address on it reads considerably more
+    professional. One constant, `EMAIL`, at the top of `build.py`.
 
 ---
 
