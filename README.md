@@ -113,6 +113,17 @@ that never carried the `.bg-forest` class. Both are fixed; sage now has a text
 weight (`--sage-ink`) and the plain `--sage` is reserved for shapes, rules and
 text on forest. Final run: **zero failures**.
 
+Both passes are reproducible. Serve the site, open any page, and in the console:
+
+```js
+const src = await (await fetch('_build/audit.js')).text(); (0, eval)(src);
+await audit.contrast();     // every text node, WCAG AA
+await audit.responsive();   // 72 probes, 6 pages x 12 widths
+```
+
+Serve it with a **threaded** server. Python's single-threaded `http.server`
+serialises the asset requests and turns a 1.1s probe into an 18s one.
+
 Tiers are 1180 / 1080 / 980 / 860 / 700 / 640 / 480 plus a landscape-phone query,
 and the whole media-query stack is the **last thing in the stylesheet** so a
 component rule can never beat it.
