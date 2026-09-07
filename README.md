@@ -5,14 +5,17 @@ Website for **Beatrice "Betty" Mwihaki Igeria**, built by Rogue Coach Teams.
 **Live:** https://harryroguecoachteams-cmd.github.io/betty-mwihaki/
 **Source of truth:** `_build/build.py`. Run it, do not hand-edit the HTML.
 
-```bash
-python _build/build.py     # regenerates all six pages
-python _build/images.py    # rebuilds assets/img from the originals
-```
+**Two constants at the top of `_build/build.py` are still unset, and the build
+warns about both every time it runs.** `FORM_ENDPOINT` leaves the opt-in and the
+consultation form as a mailto button. `CALENDAR_URL` leaves the site unable to
+book the consultation call that Betty's own intake names as its primary goal.
+Neither can be set without her accounts. See open items 1 and 3.
 
-**Before launch, set `FORM_ENDPOINT` at the top of `_build/build.py`.** Both
-forms are currently showing a mailto button instead of a real form, and the
-build prints a warning every time it runs until that is fixed. See open item 2.
+```bash
+python _build/build.py     # nine pages, plus sitemap.xml and robots.txt
+python _build/images.py    # rebuilds assets/img from the originals
+python _build/images.py og # rebuilds assets/og.jpg only
+```
 
 ---
 
@@ -49,12 +52,19 @@ coral. That is gone. Everything below now comes from the deck.
 | `index.html` | Home |
 | `about.html` | About |
 | `services.html` | The Method |
-| `shop.html` | Resources |
+| `shop.html` | Free guide |
 | `blog.html` | Journal |
 | `contact.html` | Start here |
+| `eating-healthy-not-losing-weight.html` | journal article |
+| `read-a-nutrition-label.html` | journal article |
+| `what-a-portion-looks-like.html` | journal article |
 
 The deck's nav lists "The Method" and "Coaching" separately. They are one page
 here, because there is one offer. Say the word and they split.
+
+`shop.html` is labelled **Free guide** rather than Resources: there is one
+resource, it is free, and naming it is both more honest and more clickable than
+naming the shelf it sits on. The filename stays so no link anywhere breaks.
 
 ---
 
@@ -178,6 +188,145 @@ names a retired stock file, and that no page carries more than two margin notes.
 
 ---
 
+## The commercial pass, 7 September 2026
+
+The two September passes fixed how the site *looks*. An outside review then
+pointed at the right remaining problem, which is a different one:
+
+> The design says premium expert. The evidence on the page still says new
+> coaching business.
+
+Nothing visual changed in this pass. No section was redesigned, no component was
+added, the palette and the type are untouched. What changed is what the page
+claims, how specific it is, and whether a stranger can act on it.
+
+### 1. The hero says who it is for
+
+Was, verbatim from deck page 29:
+
+> Practical nutrition coaching for women who are ready for sustainable progress
+> they can maintain.
+
+That sentence fits a diabetes clinic, a sports team, a menopause coach and a
+wellness blog equally well. It is now Betty's own positioning statement from
+deck page 7, which is far more specific and still entirely hers:
+
+> A practical 16-week nutrition coaching program for women who have tried the
+> diets, the supplements and the weight-loss trends and still struggle with
+> stubborn weight and belly fat.
+
+The headline above it is unchanged and stays unchanged. It is the one line the
+deck says to remember.
+
+### 2. The Nutrition Reset is gone
+
+The pricing section carried three tiers: the free call, the Food Clarity Method,
+and a four-week "Nutrition Reset". **That third offer appears in no approved
+document.** It is not in the brand deck, not in the Coaching Niche Discovery
+Form and not in the web intake. It was invented to fill a third column, and a
+cheaper short-format program sitting beside the flagship competes with it for
+the same buyer while the brand is still new.
+
+Two tiers now: one conversation, one program. `build.py` refuses to write a page
+containing the string "Nutrition Reset" again. If Betty genuinely wants a short
+format, it needs a price, a defined four weeks and a reason to choose it over
+the sixteen, and then it goes back.
+
+### 3. The client stories say only what Betty said
+
+Her form gives one sentence for the first client: *"I once guided a client who
+was suffering from stubborn belly fat and she was pre diabetic. She lost 30 lbs
+through nutrition and she learnt how to eat healthy."*
+
+The page had grown past that, into "we did not add a single supplement" and "she
+can feed herself now without me". Plausible, probably true, and not something
+she told us. On a health page about a real person that is the wrong direction to
+drift in, so both stories are back inside her own sentence, minus the medical
+wording deck page 28 rules out. The cousin story lost the line "the hardest
+client I have ever coached" for the same reason.
+
+### 4. The Journal is real
+
+Three articles are written and live, on the three topics Betty already teaches
+inside the sixteen weeks:
+
+| | |
+|---|---|
+| `eating-healthy-not-losing-weight.html` | Why you are eating healthy and still not losing weight |
+| `read-a-nutrition-label.html` | How to read a nutrition label in thirty seconds |
+| `what-a-portion-looks-like.html` | What a portion really looks like on your plate |
+
+Before this, every one of the six journal headlines said **Coming soon**, which
+tells a stranger the shelves went up before there was anything to put on them.
+The three that are not written are in `BACKLOG` in `_build/articles.py`, off the
+public site until they exist. `build.py` now refuses to write "Coming soon" onto
+any page.
+
+They are drafted in her voice and inside deck page 28: no diagnosis, no cure, no
+guaranteed outcome, and anything that edges toward a medical question ends by
+sending the reader to their doctor rather than to a coaching call. **Betty has
+to read all three and be able to say every sentence out loud.** See open item 5.
+
+Article copy lives in `_build/articles.py`, not in `build.py`. Adding a fourth
+means adding one dict.
+
+### 5. First person
+
+She is speaking on her own website. "Betty makes nutrition understandable"
+became "I make nutrition understandable", the credibility list on About moved
+from *she began teaching yoga* to *I began teaching yoga*, and the position
+ladder's last rung is now "I make the next step clear". Deck page 11 asks for
+second person and a knowledgeable friend; third person reads as an agency
+describing a client.
+
+### 6. The About headline
+
+**Expert enough to trust. Human enough to tell the truth.** is real brand
+personality from deck page 10, and it was the wrong h1. The moment a page calls
+itself expert, the reader asks what qualification makes it one, and the site
+cannot answer that yet. The line stays where the deck put it, in small type at
+the end of the personality section. The h1 is now her own history instead of a
+self-assessment:
+
+> I know what precision looks like. Real life is not a bodybuilding stage.
+
+### 7. What you actually get
+
+The Method page explained the five phases in full and then explained the weekly
+process again. It never listed the deliverables. The second section is now
+**What you get for sixteen weeks**: private one-to-one coaching, a nutrition
+structure, portion training, label reading, weekly check-ins, real-life problem
+solving, and skills you keep. A short version of the same list sits under the
+five phases on the home page, so nobody has to reach the pricing page to find
+out what is included.
+
+Also softened: *"nothing moves until the one before it is holding"* was a good
+sentence and not a true description of coaching a person through sixteen weeks.
+
+### 8. Search and sharing
+
+The site had a title, a description and two Open Graph tags. It now has:
+
+- a canonical URL on every page, from one `SITE_URL` constant
+- `og:image`, `og:url`, `og:site_name`, `og:locale`, and a Twitter/X large card
+- **`assets/og.jpg`**, a 1200x630 social card built by `images.py` in the deck's
+  own type and colors. Without one, every link Betty shares in a WhatsApp group
+  or a Facebook post renders as a grey rectangle
+- JSON-LD on all nine pages: one `Person` graph referenced by id everywhere,
+  plus `Service` for the Food Clarity Method, `FAQPage` on The Method, `Blog`
+  and `BlogPosting` on the journal. No rating, no review count, no price and no
+  credential, because the site does not have them
+- `sitemap.xml` and `robots.txt`, generated by the build
+- titles and descriptions rewritten for what she sells rather than for the brand
+  line. Home was "Betty | Nutrition Education for Real Life" and is now "Weight
+  Loss and Nutrition Coaching for Women | Betty Mwihaki"
+
+`robots.txt` will only be read once the site is on its own domain. GitHub Pages
+serves a project site from a subpath, and crawlers read robots.txt from the
+domain root.
+
+---
+
 ## Motion
 
 `assets/site.js`, now 190 lines instead of 490. The whole scroll pipeline is
@@ -287,73 +436,171 @@ removed until real testimonials exist. The two client results that *are* real,
 which Betty described herself, stay: they run as unnamed outcomes, in two
 different shapes, never as quoted testimonials from named people.
 
+**This is now the biggest single gap on the site, and it is the one nobody at
+this end can close.** The design reads as an established practice. The evidence
+is one anonymous client and Betty's cousin. Every competitor in this niche runs
+four to eight named outcomes. See open item 4 for exactly what to collect.
+
 ---
 
 ## Open items before launch
 
-1. **Booking link.** Every CTA points at `contact.html#book`. Paste the real
-   Calendly or TidyCal URL and find/replace `contact.html#book` in `build.py`.
-2. **Form endpoint. This is the one thing blocking launch.** Set
-   `FORM_ENDPOINT` at the top of `_build/build.py` to a real Formspree endpoint
-   from Betty's account and rebuild. Until then both forms are replaced by a
-   mailto button, which works but converts worse than a form. The previous build
-   posted to `formspree.io/f/REPLACE_ME`, which serves a 404 to a real prospect
-   and loses the lead silently, so the mailto is the lesser of the two. A
-   Calendly or TidyCal embed on `contact.html` would also do the job.
-3. **Client permission** for both result stories, in writing, plus Betty's
-   sign-off on the reworded versions. Both stories are hers, reworded to stay
-   inside the deck's claims rules on page 28: no diagnosis, cure or reversal
-   language, outcomes framed around coaching and habits.
-4. **Testimonials.** Send first name plus two or three sentences, photo optional,
-   and they go in. The strongest ones name the specific fear she had before
-   starting and what actually happened instead, or mention learning to read a
-   label. Until then the section stays off the site.
-5. **The new photographs need Betty's confirmation.** Five frames are now on
-   the site that were not before: the coast, the trail, the aircraft seat and the
-   red dress from the 3 September batch, plus the trail race on About. Captions describe the scene rather than asserting who
-   is in it. Please confirm (a) that each one is her and she is happy to publish
-   it, and (b) that the coast and trail captions are accurate.
-6. **Food and kitchen photography does not exist.** Her 21 frames are gym,
-   competition, running, travel and home, with nothing of food, cooking, a
-   grocery aisle, a label or a plate. That is why The Method opens on type and
-   the Journal has no thumbnails. Even phone photographs would change those
-   pages: her own kitchen, a plate she actually ate, a label she was reading, her
-   hands. This is the single highest-value thing she could send.
-7. **Credentials.** Deck non-negotiable 5 asks for professional scope to be
-   displayed. Send the certifications and they go on the About page.
-8. **Photo credit.** The studio, cable and competition frames look professionally
-   shot. Confirm she can publish them and whether the photographer is credited.
-9. **Pricing.** Still "Investment shared on your call" everywhere. Send the
-   figures and they go live. **The Nutrition Reset** is a suggested second offer,
-   so say whether to keep, change or remove it.
-10. **Facebook URL.** Intake gave the display name "Beatrice M" only. The footer
-   links to email instead of a dead Facebook icon.
-11. **The guide itself.** "The label-reading guide for real life" is the named
-    lead magnet everywhere. The PDF does not exist yet. The band now shows the
-    guide's three headings as type rather than a stock photograph, so a real
-    cover or a photo of Betty holding it would slot straight in.
-12. **Journal articles.** Six titles from her own keywords, no article pages.
-    Write them, or record them and we will transcribe.
-13. **Resources page.** Only the free guide is confirmed. **The portion handbook**
-    and **Four weeks of real meals** are placeholders marked "Coming soon" so the
-    page is not empty. Tell us what to actually sell and at what price.
-14. **Photo resolution.** The older frames arrived as 460 to 600px screenshots.
-    Every placement is capped so the worst upscale is about 1.2x, which holds.
-    The four new photographs are downscales and could carry much larger
-    placements if we want them to. The one exception is the coast plate, which
-    is generated at 1440px from a 945px original, a 1.52x upscale, because it is
-    the site's only full-bleed image.
-15. **Domain.** Currently on `github.io`.
-16. **Email address.** Everything points at `beatricemwihaki@yahoo.com`. Once
-    the real domain exists, a `hello@` address on it reads considerably more
-    professional. One constant, `EMAIL`, at the top of `build.py`.
+Ordered by what it costs to leave undone, not by how hard it is to do. The first
+five are the whole distance between a site that looks like an established
+practice and a business that reads like one.
+
+### Cannot launch without these
+
+**1. Form endpoint.** Set `FORM_ENDPOINT` at the top of `_build/build.py` to a
+Formspree endpoint from Betty's account and rebuild. Until then the opt-in and
+the consultation form are both a mailto button: it works, and it converts worse
+than a form. The build before this one posted to `formspree.io/f/REPLACE_ME`,
+which serves a 404 to a real prospect and loses the lead in silence, so the
+mailto is the lesser of two bad options. `build.py` refuses to ship the
+placeholder again.
+
+**2. The free guide does not exist.** "The label-reading guide for real life" is
+named in the announcement bar, on five pages and in the page titles, and the
+button currently opens an email asking Betty to send it. Somebody has to be able
+to send a PDF back the same day, or the site's main lead magnet is a promise
+with nothing behind it.
+
+There are two ways to close this and we need Betty to pick one:
+
+- Her web intake says **"I have written an EBOOK"** and names a free ebook as the
+  freebie. If that ebook fits this niche, we use it, and the section takes its
+  real title and cover.
+- If it does not fit, the guide gets written. The three headings the site already
+  promises are serving size, protein and added sugar, which is exactly the
+  content of the new journal article on labels, so most of it is already drafted.
+
+**3. Booking the call.** Betty's own intake names **"CONSULTATION BOOKING
+CALLS"** as the primary conversion goal of this website. The website cannot
+currently book one. It takes a request and she answers by hand, which asks a
+warm prospect to submit, wait, read a reply, agree a time, and come back. Some
+of them do not.
+
+Paste a Calendly, TidyCal or Google Appointments link into `CALENDAR_URL` at the
+top of `_build/build.py` and rebuild: the Start here page then books the call on
+the page, and the questions we ask now move inside the booking flow. Every build
+prints a warning until it is set.
+
+### The evidence gap. Nothing here can be done from our end
+
+**4. Four to six more client results.** This is the single biggest commercial
+weakness on the site and it is not a design problem. Right now the page carries
+one anonymous client and Betty's cousin. A stranger discounts *my cousin got
+results* very heavily, and the competitors in this niche all run four to eight
+named outcomes.
+
+What to send, per client, in her own words if possible:
+
+- what she had already tried before, and how long she had been trying
+- what actually changed, specifically. Pounds, inches, clothes that fit, energy,
+  bloodwork she chose to mention, or simply "I stopped restarting every Monday"
+- one thing she can now do without Betty. Reading a label, judging a portion,
+  eating on holiday, ordering in a restaurant
+- first name, and whether we may use it
+- optional: a photograph, or a twenty to forty second phone video
+
+No before-and-after body shots. Deck page 26 rules them out and they are not this
+brand.
+
+**5. Betty has to sign off on words that are already live.**
+
+- Both client result stories, and **written permission from both clients.** The
+  wording is inside what she told us and inside deck page 28, but it is her
+  business and her clients.
+- **The three journal articles.** They are new writing in her voice on
+  `eating-healthy-not-losing-weight.html`, `read-a-nutrition-label.html` and
+  `what-a-portion-looks-like.html`. She needs to read all three and be able to
+  say every sentence out loud. Anything she would not say, we change.
+- The five photographs added on 6 and 7 September: the coast, the trail, the
+  aircraft seat, the red dress and the trail race. Please confirm each is her,
+  that she is happy to publish it, and that the coast and trail captions are
+  accurate.
+
+**6. Credentials, and the professional scope.** Deck non-negotiable 5 asks for
+relevant credentials to be confirmed and displayed, and the site currently
+displays none, because nobody has told us what she holds. Send anything real:
+a nutrition or coaching certification, the yoga qualification, the competition
+placing and year, how long she has been coaching, how many women she has worked
+with.
+
+If there is no formal nutrition credential, that is genuinely fine and we do not
+invent one. Her authority in this brand is meant to be earned, specific and
+human, and the About page is built that way. But we should know before launch,
+because the answer changes how confidently the page can speak.
+
+### Everything else
+
+**7. Domain and email.** Both are one constant each at the top of `build.py`:
+`SITE_URL` and `EMAIL`. Everything follows them, including every canonical tag,
+the sitemap, the social card URL and the structured data. `github.io` and a
+Yahoo address are the two details on the site that most contradict the rest of
+it. A `hello@` on her own domain is a small change with an outsized effect.
+
+**8. Pricing.** Both tiers still read "Investment shared on your call". That is
+a defensible choice and it is also the one thing on the page a buyer can wonder
+about, so it is worth testing "Investment from $X" or "most clients invest $X to
+$Y" once there is a number. **Send the figure and we will make the call on how
+to show it.** No price is invented here.
+
+**9. Food and kitchen photography still does not exist.** Her 21 frames are gym,
+competition, running, travel and home. Nothing of food, cooking, a grocery aisle,
+a label or a plate. That is why The Method opens on type, the Journal has no
+images and the guide's cover is set rather than photographed. Even phone
+photographs would change those pages: her own kitchen, a plate she actually ate,
+a label she was reading, her hands. **This remains the highest-value thing she
+could send.**
+
+**10. Social profiles.** The site says *Betty. Nutrition education for real
+life.* TikTok says `@betty_fit8`. Nothing is wrong with the handle, but if the
+account reads as gym content, a visitor who clicks through gets a different
+business than the one she just read about, and deck page 26 specifically warns
+against looking fitness-only. Before launch: matching profile photo, the B.
+monogram or wordmark where it fits, bios that name the Food Clarity Method, and
+a pinned post that introduces the niche.
+
+**11. Facebook URL.** The intake gave the display name "Beatrice M" only, so the
+footer links to email rather than a dead Facebook icon.
+
+**12. Photo credit.** The studio, cable and competition frames look
+professionally shot. Confirm she can publish them and whether the photographer
+is credited.
+
+**13. Photo resolution.** The older frames arrived as 460 to 600px screenshots
+and every placement is capped so the worst upscale is about 1.2x. The four newer
+photographs are downscales and could carry much larger placements. The one
+exception is the coast plate, generated at 1440px from a 945px original, a 1.52x
+upscale, because it is the site's only full-bleed image.
+
+**14. The rest of the Journal.** Three more titles are drafted as headlines only
+and sit in `BACKLOG` in `_build/articles.py`: weight-loss medications, stubborn
+belly fat after 40, and four questions to start with. They are off the site
+until they are written. Betty can record them as voice notes and we will
+transcribe.
+
+**15. The other two resources.** "The portion handbook" and "Four weeks of real
+meals" were on the Resources page marked as being written. They are off it now,
+because one real product beside two that do not exist reads as an empty shelf.
+Tell us what to actually build and whether either is paid.
 
 ---
 
 ## Assets
 
 `assets/img/` is fully self-hosted, no hotlinks, all EXIF stripped.
-`_build/images.py` rebuilds it. Betty's own photographs come from
+`_build/images.py` rebuilds it.
+
+**`assets/og.jpg`** is the 1200x630 social card, drawn by `images.py` rather
+than screenshotted so it stays on the deck: forest ground, the wordmark with its
+clay point, the one line to remember set in Lora, and her own photograph on the
+right. Rebuild it alone with `python _build/images.py og`. It needs Lora and
+Inter in `_build/_fonts/`, which are gitignored and downloaded from
+`github.com/google/fonts`; without them the script falls back to Georgia, which
+is this site's own declared serif fallback. The card is committed, so this only
+matters if you are changing it. Betty's own photographs come from
 `F:\betty\betty photos\`; the food and reader photography is licensed stock,
 downloaded once into `_build/_stock/` (not committed) and processed locally. If
 `_stock` is absent the script rebuilds only Betty's photographs and says so.
@@ -363,6 +610,11 @@ downloaded once into `_build/_stock/` (not committed) and processed locally. If
 Pushing to `main` republishes via GitHub Pages.
 
 ```bash
-python _build/build.py
+python _build/build.py                       # nine pages, sitemap, robots
 git add -A && git commit -m "..." && git push
 ```
+
+`sitemap.xml` and `robots.txt` are generated by the build, so never hand-edit
+them. Both read `SITE_URL` from the top of `build.py`, along with every canonical
+tag, every Open Graph URL and the whole JSON-LD graph. **Changing the domain is
+one line and a rebuild.**

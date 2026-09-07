@@ -32,8 +32,13 @@ information architecture, and breaks the template:
 Draft notes to Betty used to render on the public pages. They are now in
 README.md under "Open items" and DRAFT_NOTES stays False.
 """
+import datetime
 import io
+import json
 import os
+import re
+
+from articles import ARTICLES
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.abspath(os.path.join(HERE, '..'))
@@ -50,13 +55,26 @@ DRAFT_NOTES = False
 # `formspree.io/f/REPLACE_ME`, which serves a 404 to a real prospect and loses
 # the lead silently. FORBIDDEN blocks that placeholder from ever shipping again.
 FORM_ENDPOINT = None          # e.g. 'https://formspree.io/f/xdkogqyz'
+
+# The primary conversion goal on Betty's own intake form is a booked
+# consultation call. Until this is set, the Start here page takes a request and
+# she replies with a time, which is a round trip a warm prospect does not always
+# come back from. Paste a Calendly, TidyCal or Google Appointments link and the
+# call gets booked on the page instead, with the same questions asked inside the
+# booking flow.
+CALENDAR_URL = None           # e.g. 'https://calendly.com/betty/20min'
+
 EMAIL = 'beatricemwihaki@yahoo.com'
+
+# Everything that changes on the day the real domain lands. Canonical tags, the
+# sitemap, the social card and the structured data all read from here.
+SITE_URL = 'https://harryroguecoachteams-cmd.github.io/betty-mwihaki/'
 
 NAV = [
     ('about.html', 'About'),
     ('services.html', 'The Method'),
-    ('shop.html', 'Resources'),
     ('blog.html', 'Journal'),
+    ('shop.html', 'Free guide'),
 ]
 BOOK = 'contact.html#book'
 
@@ -151,6 +169,75 @@ else:
         mailto('The label-reading guide for real life', 'Ask me for the guide'))
 
 
+# ------------------------------------------------------- structured data ---
+# One graph, referenced by id from every page, so a search engine reads six
+# pages plus three articles as one person running one service rather than nine
+# unrelated documents. Nothing in here is a claim the site does not already
+# make out loud: no rating, no review count, no price, no credential.
+PERSON_ID = SITE_URL + '#betty'
+BLOG_ID = SITE_URL + 'blog.html#blog'
+
+PERSON = {
+    '@type': 'Person',
+    '@id': PERSON_ID,
+    'name': 'Beatrice Mwihaki Igeria',
+    'alternateName': 'Betty Mwihaki',
+    'jobTitle': 'Weight loss and nutrition coach',
+    'url': SITE_URL + 'about.html',
+    'image': SITE_URL + 'assets/img/betty-portrait.jpg',
+    'email': 'mailto:' + EMAIL,
+    'description': ('Betty coaches women who have tried diets, supplements and '
+                    'weight-loss trends and still struggle with stubborn weight '
+                    'and belly fat. She began teaching yoga in Kenya at '
+                    'eighteen and went on to compete in bodybuilding.'),
+    'knowsAbout': ['Nutrition education', 'Portion sizes',
+                   'Reading nutrition labels', 'Sustainable weight loss',
+                   'Habit and accountability coaching'],
+    'sameAs': ['https://www.instagram.com/betty_mwihaki/',
+               'https://www.tiktok.com/@betty_fit8'],
+}
+
+WEBSITE = {
+    '@type': 'WebSite',
+    '@id': SITE_URL + '#website',
+    'url': SITE_URL,
+    'name': 'Betty | Nutrition education for real life',
+    'inLanguage': 'en-US',
+    'publisher': {'@id': PERSON_ID},
+}
+
+SERVICE = {
+    '@type': 'Service',
+    '@id': SITE_URL + 'services.html#method',
+    'name': 'The Food Clarity Method',
+    'serviceType': 'Nutrition and weight loss coaching',
+    'url': SITE_URL + 'services.html',
+    'provider': {'@id': PERSON_ID},
+    'description': ('A practical 16-week one-to-one nutrition and weight loss '
+                    'coaching program in five phases: clarify, understand, '
+                    'apply, stay consistent, own it.'),
+    'audience': {'@type': 'PeopleAudience', 'audienceType': 'Women'},
+    'areaServed': 'Worldwide',
+}
+
+
+def plain(s):
+    """Structured data carries text, not markup."""
+    s = re.sub(r'<[^>]+>', '', s)
+    for a, b in ((u'&ldquo;', u'"'), (u'&rdquo;', u'"'), (u'&amp;', u'&'),
+                 (u'&nbsp;', u' ')):
+        s = s.replace(a, b)
+    return ' '.join(s.split())
+
+
+def json_ld(nodes):
+    body = json.dumps({'@context': 'https://schema.org', '@graph': nodes},
+                      ensure_ascii=False, separators=(',', ':'))
+    # A closing tag inside the JSON would end the script element early.
+    return ('<script type="application/ld+json">%s</script>'
+            % body.replace('</', '<' + chr(92) + '/'))
+
+
 # ------------------------------------------------------------------ shell ---
 HEAD = u"""<!doctype html>
 <html lang="en">
@@ -159,10 +246,24 @@ HEAD = u"""<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{desc}">
+<link rel="canonical" href="{url}">
 <meta name="theme-color" content="#1F3D33">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:site_name" content="Betty | Nutrition education for real life">
+<meta property="og:locale" content="en_US">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
-<meta property="og:type" content="website">
+<meta property="og:type" content="{ogtype}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{base}assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Betty. Stop guessing what to eat. Start understanding your food.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{title}">
+<meta name="twitter:description" content="{desc}">
+<meta name="twitter:image" content="{base}assets/og.jpg">
+{schema}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
@@ -226,14 +327,14 @@ FOOT = u"""</main>
           <li><a href="index.html">Home</a></li>
           <li><a href="about.html">About Betty</a></li>
           <li><a href="services.html">The Method</a></li>
-          <li><a href="shop.html">Resources</a></li>
+          <li><a href="shop.html">Free guide</a></li>
         </ul>
       </div>
       <div>
         <h4>Learn</h4>
         <ul>
           <li><a href="blog.html">Journal</a></li>
-          <li><a href="index.html#guide">Free guide</a></li>
+          <li><a href="read-a-nutrition-label.html">Reading a label</a></li>
           <li><a href="services.html#faq">Questions</a></li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
@@ -270,11 +371,18 @@ FOOT = u"""</main>
 """
 
 
-def shell(page, title, desc, body):
+def shell(page, title, desc, body, schema=None, ogtype='website',
+          active=None):
+    """`active` exists because a journal article is its own URL but should
+    still light the Journal item in the nav."""
     nav = '\n      '.join(
-        '<a href="%s"%s>%s</a>' % (h, ' class="active"' if h == page else '', l)
+        '<a href="%s"%s>%s</a>'
+        % (h, ' class="active"' if h == (active or page) else '', l)
         for h, l in NAV)
-    return (HEAD.format(title=title, desc=desc, nav=nav, book=BOOK)
+    return (HEAD.format(title=title, desc=desc, nav=nav, book=BOOK,
+                        url=SITE_URL + ('' if page == 'index.html' else page),
+                        base=SITE_URL, ogtype=ogtype,
+                        schema=json_ld(schema) if schema else '')
             + body + FOOT.format(book=BOOK))
 
 
@@ -397,8 +505,9 @@ def build_index():
     <div class="hero-copy">
       {eyebrow}
       <h1 data-rv="lines">{h}</h1>
-      <p class="lede">Practical nutrition coaching for women who are
-      ready for sustainable progress they can maintain.</p>
+      <p class="lede">A practical 16-week nutrition coaching program for
+      women who have tried the diets, the supplements and the weight-loss
+      trends and still struggle with stubborn weight and belly fat.</p>
       <div class="actions">
         {b1}
         {tl}
@@ -495,8 +604,8 @@ def build_index():
     <div class="ed">
       <div class="ed-head">
         <h2 data-rv>{h}</h2>
-        <p class="lede">She cuts through the conflicting advice first, then
-        turns what is left into a routine you can actually keep.</p>
+        <p class="lede">I cut through the conflicting advice first, then
+        turn what is left into a routine you can actually keep.</p>
       </div>
       <div class="ed-body">
         <div class="ladder" data-rv>
@@ -510,7 +619,7 @@ def build_index():
           </div>
           <div class="rung her">
             <p class="k">Betty</p>
-            <p class="t">The practical coach who makes the next step clear.</p>
+            <p class="t">I make the next step clear.</p>
           </div>
         </div>
       </div>
@@ -520,7 +629,7 @@ def build_index():
     {fig}
   </div>
 </section>
-""".format(h=lines('Betty makes nutrition', 'understandable.'),
+""".format(h=lines('I make nutrition', 'understandable.'),
            fig=figure('coast-wide.jpg',
                       'Running barefoot on wet sand at Haystack Rock on the '
                       'Oregon coast',
@@ -574,12 +683,25 @@ def build_index():
       <div class="ed-head">
         <h2 data-rv>{h}</h2>
         <p class="lede">A practical 16-week weight-loss and nutrition coaching
-        journey, in five phases. Each one does a single job, and nothing moves
-        until the one before it is holding.</p>
+        journey, in five phases. Each one does a single job and builds on the
+        one before it, and the coaching adapts to the week you actually
+        have.</p>
         <div class="actions">{b1}</div>
       </div>
       <div class="ed-body" data-rv>
 {phases}
+        <div class="incl">
+          <p class="k-head">What is included</p>
+          <ul>
+            <li>Private one-to-one coaching for sixteen weeks</li>
+            <li>A nutrition structure built for your kitchen, budget and week</li>
+            <li>Portion training you can do with your own hands and plates</li>
+            <li>Label reading, so the front of the packet stops deciding</li>
+            <li>Weekly check-ins, honest feedback and adjustments</li>
+            <li>Restaurants, travel, family meals and the weeks that go wrong</li>
+            <li>Skills you keep, so you can do this without me</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -644,18 +766,19 @@ def build_index():
     <div class="ed">
       <div class="ed-head">
         <h2 data-rv>{h}</h2>
-        <p class="lede">Two stories in Betty's own words. Coaching supports
-        habits, understanding and accountability. It is not a promise of a
-        particular result.</p>
+        <p class="lede">Two of the women I have coached, in as close to
+        their own circumstances as I can put it. Coaching supports habits,
+        understanding and accountability. It is not a promise of a particular
+        result.</p>
       </div>
       <div class="ed-body">
         <div class="figure-row" data-rv>
           <p class="stat"><b>30</b><span>pounds</span></p>
           <div>
-            <p>She had already tried plan after plan when she came to me. We did
-            not add a single supplement. We changed how she ate and she learned
-            the reason behind every choice. Thirty pounds down, and she can feed
-            herself now without me.</p>
+            <p>She came to me struggling with stubborn belly fat. We worked
+            on her nutrition, meal by meal, until she understood the reason
+            behind what was on her plate. Thirty pounds down, and she knows how
+            to eat well without me standing next to her.</p>
             <p class="who">Nutrition coaching client</p>
           </div>
         </div>
@@ -664,11 +787,11 @@ def build_index():
   </div>
   <blockquote class="band" data-rv>
     <div class="wrap">
-      <p class="pull">The hardest client I have ever coached.</p>
-      <p>My own cousin. She came to me worried about where her health was
-      heading and we worked through her nutrition together, month after month.
-      Family is the hardest audience there is, and the most worth it. She
-      understands her food now, and she is not guessing anymore.</p>
+      <p class="pull">My own cousin.</p>
+      <p>She came to me worried about where her health was heading, and we
+      worked through her nutrition together, month after month. Family is the
+      hardest audience there is, and the most worth it. She understands her food
+      now, and she is not guessing anymore.</p>
       <footer>Nutrition coaching client</footer>
     </div>
   </blockquote>
@@ -699,11 +822,17 @@ def build_index():
 
     return shell(
         'index.html',
-        'Betty | Nutrition Education for Real Life',
-        'Practical nutrition coaching for women who are ready for sustainable '
-        'progress they can maintain. Stop guessing what to eat and start '
-        'understanding your food.',
-        ''.join(b))
+        'Weight Loss and Nutrition Coaching for Women | Betty Mwihaki',
+        'A practical 16-week nutrition coaching program for women who have '
+        'tried diets, supplements and weight-loss trends and still struggle '
+        'with stubborn weight and belly fat. Learn what to eat, understand '
+        'your portions, and build habits that last.',
+        ''.join(b),
+        schema=[WEBSITE, PERSON, SERVICE,
+                {'@type': 'WebPage', '@id': SITE_URL + '#webpage',
+                 'url': SITE_URL, 'isPartOf': {'@id': SITE_URL + '#website'},
+                 'about': {'@id': PERSON_ID},
+                 'name': 'Weight Loss and Nutrition Coaching for Women'}])
 
 
 # =============================================================== about.html ==
@@ -724,7 +853,8 @@ def build_about():
     </div>
   </div>
 </section>
-""".format(h=lines('Expert enough', 'to trust. Human', 'enough to tell', 'the truth.'),
+""".format(h=lines('I know what precision', 'looks like.',
+                    'Real life is not', 'a bodybuilding stage.'),
            b1=btn(BOOK, 'Book a free call', 'clay'),
            im=hero_img('betty-portrait.jpg',
                        'Betty smiling in a Strength tee, beside a framed '
@@ -825,12 +955,15 @@ def build_about():
       <div class="ed-body">
         <dl class="deflist" data-rv>
           <dt>Foundation</dt>
-          <dd>She began teaching yoga in Kenya at eighteen, guided by Mrs Kanja.</dd>
+          <dd>I began teaching yoga in Kenya at eighteen, guided by Mrs Kanja,
+          who was the first person to sit me down and teach me about eating
+          well.</dd>
           <dt>Discipline</dt>
-          <dd>Bodybuilding preparation sharpened her nutrition precision to the
-          point where every gram was accounted for.</dd>
+          <dd>Preparing for bodybuilding competitions sharpened my nutrition
+          precision to the point where every gram was accounted for.</dd>
           <dt>Lived empathy</dt>
-          <dd>She understands stubborn belly fat and a body that changes.</dd>
+          <dd>I understand stubborn belly fat and a body that stops responding
+          the way it used to, because I have had one.</dd>
           <dt>Responsible proof</dt>
           <dd>Client stories shared accurately, and only with permission.</dd>
         </dl>
@@ -842,7 +975,7 @@ def build_about():
 <section class="s tight">
   <div class="wrap narrow">
     <h2 class="mb-l" data-rv>{h2}</h2>
-    <p class="run" data-rv><b>Warm.</b> She understands the mirror, the
+    <p class="run" data-rv><b>Warm.</b> I understand the mirror, the
     frustration and the fear. <b>Plain-spoken.</b> Science becomes language you
     can repeat to someone else. <b>Unshockable.</b> No judgment about failed
     diets, setbacks or starting over. <b>Steady.</b> Calm confidence, with no
@@ -928,10 +1061,17 @@ def build_about():
 
     return shell(
         'about.html',
-        'About Betty | Nutrition Education for Real Life',
+        'About Betty Mwihaki | Nutrition Coach for Women',
         'Betty began teaching yoga in Kenya at eighteen and went on to compete '
-        'in bodybuilding. Today she coaches women to understand their food.',
-        ''.join(b))
+        'in bodybuilding. Today she coaches women who have tried everything to '
+        'understand their food and lose weight sustainably.',
+        ''.join(b),
+        schema=[PERSON,
+                {'@type': 'AboutPage', '@id': SITE_URL + 'about.html#webpage',
+                 'url': SITE_URL + 'about.html',
+                 'isPartOf': {'@id': SITE_URL + '#website'},
+                 'mainEntity': {'@id': PERSON_ID}}],
+        ogtype='profile')
 
 
 # ============================================================ services.html ==
@@ -956,8 +1096,9 @@ def build_services():
     <div class="ed">
       <div class="ed-head">
         <h2 data-rv>{h2}</h2>
-        <p class="lede">Each phase does one job. Nothing moves until the one
-        before it is holding.</p>
+        <p class="lede">Each phase does one job and builds on the one
+        before it. The coaching still bends around whatever your week actually
+        looks like.</p>
         {n}
       </div>
       <div class="ed-body" data-rv>
@@ -979,21 +1120,35 @@ def build_services():
     <div class="ed">
       <div class="ed-head">
         <h2 data-rv>{h}</h2>
+        <p class="lede">The five phases above are what happens. This is what
+        you get.</p>
       </div>
       <div class="ed-body">
         <dl class="deflist wide-dl" data-rv>
-          <dt>We talk first</dt>
-          <dd>A free 20-minute call. I want to hear what you have tried, what
-          happened, and what you actually want your body to feel like.</dd>
-          <dt>We build your structure</dt>
-          <dd>Not a printed meal plan. A framework for your kitchen, your budget
-          and your week, with the reasoning explained every time.</dd>
-          <dt>We check in weekly</dt>
-          <dd>Accountability, honest feedback and adjustments as your body
-          responds. This is where most women stop guessing.</dd>
-          <dt>You take it with you</dt>
-          <dd>By week sixteen you should not need me. You can read a label, judge
-          a portion and feed yourself for life.</dd>
+          <dt>Private one-to-one coaching</dt>
+          <dd>Sixteen weeks, working with me directly. Not a group, not an app,
+          and not a course you watch on your own.</dd>
+          <dt>A nutrition structure built around your life</dt>
+          <dd>Your kitchen, your budget, your schedule and the food you already
+          buy. Not a printed meal plan, and the reasoning is explained every
+          time so you can rebuild it yourself later.</dd>
+          <dt>Portion training</dt>
+          <dd>How much, judged with your own hands and your own plates, so you
+          can do it at a restaurant and at your mother's table without a scale
+          or an app.</dd>
+          <dt>Label reading</dt>
+          <dd>Serving size, protein and added sugar, in that order, plus what
+          the front of the packet is not telling you.</dd>
+          <dt>Weekly check-ins</dt>
+          <dd>Honest feedback and adjustments as your body responds. This is
+          where most women stop starting over.</dd>
+          <dt>Real-life problem solving</dt>
+          <dd>Restaurants, travel, family meals, birthdays and the weeks that
+          simply go wrong. Those weeks are the program, not an interruption to
+          it.</dd>
+          <dt>Skills you keep</dt>
+          <dd>By week sixteen you should not need me. You can read a label,
+          judge a portion and adjust when life changes. That is the design.</dd>
         </dl>
       </div>
     </div>
@@ -1005,11 +1160,11 @@ def build_services():
     <div class="ed">
       <div class="ed-head">
         <h2 data-rv>{h2}</h2>
-        <p class="lede">Every one of them starts with the same free
-        conversation.</p>
+        <p class="lede">There is one program, and one conversation that starts
+        it. Nothing is decided on that call except whether I can help.</p>
       </div>
     </div>
-    <div class="tiers">
+    <div class="tiers two">
       <div class="tier">
         <span class="flag">Start here</span>
         <h3>Free consultation</h3>
@@ -1035,18 +1190,6 @@ def build_services():
           <li>Habits designed to outlast the program</li>
         </ul>
         {t2}
-      </div>
-      <div class="tier">
-        <span class="flag">Short format</span>
-        <h3>The Nutrition Reset</h3>
-        <p class="price">Investment shared on your call</p>
-        <ul>
-          <li>A focused four-week starting block</li>
-          <li>Portions, protein and label basics</li>
-          <li>A grocery and plate framework</li>
-          <li>Ideal if sixteen weeks feels like a lot right now</li>
-        </ul>
-        {t3}
       </div>
     </div>
   </div>
@@ -1078,11 +1221,10 @@ def build_services():
     </div>
   </div>
 </section>
-""".format(h=lines('How the sixteen', 'weeks actually run.'),
-           h2=lines('Three ways to', 'work together.'),
+""".format(h=lines('What you get for', 'sixteen weeks.'),
+           h2=lines('One program,', 'and the call', 'that starts it.'),
            t1=btn(BOOK, 'Book the call', 'ghost'),
            t2=btn(BOOK, 'Apply on a free call', 'clay'),
-           t3=btn(BOOK, 'Ask about it', 'ghost'),
            h3=lines('This is for you if.'),
            im=img('betty-cable.jpg', 'Betty training at a cable machine', 'tall'),
            h4=lines('Questions I get every week.'),
@@ -1095,10 +1237,18 @@ def build_services():
 
     return shell(
         'services.html',
-        'The Food Clarity Method | 16-Week Nutrition Coaching with Betty',
-        'A practical 16-week weight-loss and nutrition coaching journey in five '
-        'phases: clarify, understand, apply, stay consistent, own it.',
-        ''.join(b))
+        'The Food Clarity Method | 16-Week Weight Loss and Nutrition Coaching',
+        'A practical 16-week weight-loss and nutrition coaching program in five '
+        'phases: clarify, understand, apply, stay consistent, own it. Private '
+        'one-to-one coaching, portion training and label reading.',
+        ''.join(b),
+        schema=[PERSON, SERVICE,
+                {'@type': 'FAQPage',
+                 '@id': SITE_URL + 'services.html#faq',
+                 'mainEntity': [
+                     {'@type': 'Question', 'name': plain(q),
+                      'acceptedAnswer': {'@type': 'Answer', 'text': plain(a)}}
+                     for q, a in FAQ]}])
 
 
 FAQ = [
@@ -1163,9 +1313,9 @@ def build_shop():
     <div class="phero-grid">
       <div>
         <h1 data-rv="lines">{h}</h1>
-        <p class="lede">Short, plain-English guides you can start using this
-        week, one clear teaching idea at a time. There is one so far. It is
-        free, and the next two are being written.</p>
+        <p class="lede">One short, plain-English guide you can start using
+        this week. It is free, it takes about ten minutes to read, and it is the
+        first thing I teach every woman I coach.</p>
       </div>
       <div class="cover-slot" data-rv>{cover}</div>
     </div>
@@ -1197,26 +1347,14 @@ def build_shop():
 </section>
 
 <section class="s tight bg-oat">
-  <div class="wrap">
-    <p class="k-head">Coming next</p>
-    <div class="library">
-      <article class="entry">
-        <div class="e-k"><span class="more">Being written</span></div>
-        <div>
-          <h3>The portion handbook</h3>
-          <p>How to judge a portion without weighing every meal, using your own
-          hands, your own plates and the food you already buy.</p>
-        </div>
-      </article>
-      <article class="entry">
-        <div class="e-k"><span class="more">Being written</span></div>
-        <div>
-          <h3>Four weeks of real meals</h3>
-          <p>A month of straightforward, affordable meals built on the same
-          principles I coach, with the reasoning behind every plate.</p>
-        </div>
-      </article>
-    </div>
+  <div class="wrap narrow">
+    <p class="k-head">Also worth reading</p>
+    <p class="big-p" style="margin-top:0">Three pieces in the journal cover the
+    same ground in more detail: <a href="read-a-nutrition-label.html">reading a
+    label in thirty seconds</a>, <a href="what-a-portion-looks-like.html">what a
+    portion actually looks like</a>, and
+    <a href="eating-healthy-not-losing-weight.html">why eating healthy is not
+    moving the scale</a>.</p>
   </div>
 </section>
 """.format(h=lines('Understand your', 'food, one idea', 'at a time.'),
@@ -1232,56 +1370,68 @@ def build_shop():
 
     return shell(
         'shop.html',
-        'Resources | Betty, Nutrition Education for Real Life',
-        'Plain-English nutrition guides from Betty: label reading, portions and '
-        'real meals you can repeat.',
-        ''.join(b))
+        'Free Nutrition Label-Reading Guide for Women | Betty Mwihaki',
+        'A free plain-English guide to reading a nutrition label: serving size, '
+        'protein and added sugar, in the order that lets you judge almost any '
+        'packet in the aisle.',
+        ''.join(b),
+        schema=[PERSON,
+                {'@type': 'WebPage', '@id': SITE_URL + 'shop.html#webpage',
+                 'url': SITE_URL + 'shop.html',
+                 'isPartOf': {'@id': SITE_URL + '#website'},
+                 'name': 'The label-reading guide for real life'}])
 
 
 # ================================================================ blog.html ==
-POSTS = [
-    ('Food clarity', 'Why you are eating healthy and still not losing weight',
-     'The four most common reasons the scale will not move, and not one of them '
-     'is that you are not trying hard enough.'),
-    ('Food clarity', 'What weight-loss medications do, and what they do not teach you',
-     'Why so many women are reaching for them, what changes when you stop, and '
-     'what the education route genuinely asks of you.'),
-    ('Label literacy', 'How to read a nutrition label in thirty seconds',
-     'Serving size, protein, added sugar. Three numbers, in this order, and you '
-     'can judge almost any packet in the aisle.'),
-    ('Over 40', 'Stubborn belly fat after 40: what actually changed',
-     'Your body did not betray you. Here is what shifts as we get older, and '
-     'what to do about it that is not another crash diet.'),
-    ('Portions', 'What a portion really looks like on your plate',
-     'You do not need a food scale on the counter for the rest of your life. '
-     'You need a reliable way to eyeball it.'),
-    ('Simple action', 'Confused about what to eat? Start with these four questions',
-     'Before you change a single thing about how you eat, answer these. They '
-     'will save you months of guessing.'),
-]
+# The Journal used to be six headlines with "Coming soon" under every one, which
+# tells a stranger the shelves went up before there was anything to put on them.
+# The three that exist now live in articles.py. The three that do not are in
+# BACKLOG in the same file, off the public site until they are written.
+def pretty_date(iso):
+    d = datetime.date(*[int(x) for x in iso.split('-')])
+    return '%s %d, %d' % (d.strftime('%B'), d.day, d.year)
+
+
+def entry(a):
+    return u"""      <article class="entry">
+        <div class="e-k">
+          <p class="cat">{cat}</p>
+          <span class="more">{mins} min read</span>
+        </div>
+        <div>
+          <h3><a href="{slug}.html">{title}</a></h3>
+          <p>{dek}</p>
+        </div>
+      </article>""".format(cat=a['cat'], mins=a['mins'], slug=a['slug'],
+                           title=a['title'], dek=a['dek'])
+
+
+def article_schema(a):
+    url = SITE_URL + a['slug'] + '.html'
+    return {
+        '@type': 'BlogPosting',
+        '@id': url + '#article',
+        'headline': a['title'],
+        'description': a['desc'],
+        'datePublished': a['date'],
+        'dateModified': a['date'],
+        'author': {'@id': PERSON_ID},
+        'publisher': {'@id': PERSON_ID},
+        'mainEntityOfPage': url,
+        'url': url,
+        'image': SITE_URL + 'assets/og.jpg',
+        'articleSection': a['cat'],
+        'inLanguage': 'en-US',
+        'isPartOf': {'@id': BLOG_ID},
+        'wordCount': len(plain(a['body']).split()),
+    }
 
 
 def build_blog():
-    """A contents page rather than a grid of post cards. The six thumbnails were
-    licensed stock photographs of other women, which on an index of Betty's own
-    writing was the loudest tell left on the site, and her library has no food or
-    kitchen photography to replace them with. So the journal runs on type: one
-    lead story at full weight, then the rest as entries."""
-    lead = POSTS[0]
-    rest = POSTS[1:]
-
-    entries = []
-    for cat, title, dek in rest:
-        entries.append(u"""      <article class="entry">
-        <div class="e-k">
-          <p class="cat">{cat}</p>
-          <span class="more">Coming soon</span>
-        </div>
-        <div>
-          <h3>{title}</h3>
-          <p>{dek}</p>
-        </div>
-      </article>""".format(cat=cat, title=title, dek=dek))
+    """A contents page rather than a grid of post cards: one lead story at full
+    weight, then the rest as entries. Her library has no food or kitchen
+    photography, so the journal runs on type."""
+    lead, rest = ARTICLES[0], ARTICLES[1:]
 
     b = [u"""
 <section class="phero type">
@@ -1300,9 +1450,9 @@ def build_blog():
   <div class="wrap">
     <article class="lead-story" data-rv>
       <p class="cat">{lcat}</p>
-      <h2>{ltitle}</h2>
+      <h2><a href="{lslug}.html">{ltitle}</a></h2>
       <p class="lede">{ldek}</p>
-      <span class="more">Coming soon</span>
+      {ltl}
     </article>
     <p class="k-head">Also in the journal</p>
     <div class="library">
@@ -1311,8 +1461,10 @@ def build_blog():
   </div>
 </section>
 """.format(h=lines('No nutrition', 'noise. Just what', 'to do next.'),
-           lcat=lead[0], ltitle=lead[1], ldek=lead[2],
-           entries='\n'.join(entries))]
+           lcat=lead['cat'], lslug=lead['slug'], ltitle=lead['title'],
+           ldek=lead['dek'],
+           ltl=tlink(lead['slug'] + '.html', 'Read it'),
+           entries='\n'.join(entry(a) for a in rest))]
 
     b.append(GUIDE)
     b.append(cta(['Would you rather', 'just talk it through?'],
@@ -1321,11 +1473,73 @@ def build_blog():
 
     return shell(
         'blog.html',
-        'Journal | Betty, Nutrition Education for Real Life',
-        'Straight answers on food, portions and sustainable progress, written '
-        'for women who are done guessing.',
-        ''.join(b))
+        'Nutrition Journal | Food, Portions and Weight Loss, in Plain English',
+        'Straight answers on food, portions and sustainable weight loss, '
+        'written for women who are done guessing.',
+        ''.join(b),
+        schema=[PERSON,
+                {'@type': 'Blog', '@id': BLOG_ID, 'url': SITE_URL + 'blog.html',
+                 'name': 'The journal', 'inLanguage': 'en-US',
+                 'publisher': {'@id': PERSON_ID},
+                 'blogPost': [{'@id': SITE_URL + a['slug'] + '.html#article'}
+                              for a in ARTICLES]}]
+        + [article_schema(a) for a in ARTICLES])
 
+
+def build_article(a):
+    """One column of type on white. No hero image, because there is no
+    photograph in her library that belongs above an article about labels."""
+    others = [x for x in ARTICLES if x['slug'] != a['slug']]
+    b = [u"""
+<section class="phero art-head">
+  <div class="wrap narrow">
+    <p class="cat">{cat}</p>
+    <h1>{title}</h1>
+    <p class="lede">{dek}</p>
+    <p class="art-meta"><b>Betty</b> &nbsp; {date} &nbsp; {mins} min read</p>
+  </div>
+</section>
+
+<section class="s">
+  <div class="wrap narrow">
+    <div class="prose">
+{body}
+      <div class="art-end">
+        <p>This is one of the things we work through together inside the
+        sixteen weeks. If you would rather stop guessing and start
+        understanding your food, the first step is a free 20-minute
+        conversation.</p>
+        <div class="actions">{b1}{tl}</div>
+      </div>
+    </div>
+
+    <div class="art-more">
+      <p class="k-head">More from the journal</p>
+      <div class="library">
+{entries}
+      </div>
+    </div>
+  </div>
+</section>
+""".format(cat=a['cat'], title=a['title'], dek=a['dek'], mins=a['mins'],
+           date=pretty_date(a['date']), body=a['body'].strip(),
+           b1=btn(BOOK, 'Book a free call', 'clay'),
+           tl=tlink('shop.html', 'Get the free guide'),
+           entries='\n'.join(entry(x) for x in others))]
+
+    b.append(cta(['Stop guessing', 'what to eat.'],
+                 'Book a free 20-minute conversation. We will talk through what '
+                 'you have already tried, what is actually getting in the way, '
+                 'and whether the 16-week method is right for you.'))
+
+    return shell(
+        a['slug'] + '.html',
+        a['title'] + ' | Betty Mwihaki',
+        a['desc'],
+        ''.join(b),
+        schema=[PERSON, article_schema(a)],
+        ogtype='article',
+        active='blog.html')
 
 
 # ============================================================= contact.html ==
@@ -1359,7 +1573,17 @@ CONTACT_FORM = u'''<form action="%s" method="POST">
 CONTACT_INTRO = ('Fill this in and I will come back to you with a time. If you '
                  'would rather just email, that works too.')
 
-if not FORM_ENDPOINT:
+# When a booking link exists, the call gets booked here and now. The two
+# questions that matter still get asked, inside the booking flow rather than
+# ahead of it, so nobody has to wait a day to be given a time.
+if CALENDAR_URL:
+    CONTACT_FORM = (u'<div class="cal-embed">'
+                    u'<iframe src="%s" title="Book a free 20-minute call with '
+                    u'Betty" loading="lazy" style="width:100%%;min-height:760px;'
+                    u'border:0"></iframe></div>' % CALENDAR_URL)
+    CONTACT_INTRO = ('Pick a time that works and it is booked. I will ask what '
+                     'you have already tried when we speak.')
+elif not FORM_ENDPOINT:
     CONTACT_FORM = u"""<div class="actions">%s</div>
         <p class="form-note">Tell me what you have already tried and what is
         getting in the way. There is no wrong answer, and no pitch waiting at
@@ -1420,10 +1644,16 @@ def build_contact():
 
     return shell(
         'contact.html',
-        'Start Here | Book a Free Call with Betty',
+        'Book a Free Nutrition Consultation | Betty Mwihaki',
         'Book a free 20-minute nutrition consultation with Betty. No pressure '
         'and no pitch, just an honest answer on whether coaching can help.',
-        ''.join(b))
+        ''.join(b),
+        schema=[PERSON,
+                {'@type': 'ContactPage',
+                 '@id': SITE_URL + 'contact.html#webpage',
+                 'url': SITE_URL + 'contact.html',
+                 'isPartOf': {'@id': SITE_URL + '#website'},
+                 'about': {'@id': PERSON_ID}}])
 
 
 # ------------------------------------------------------------------- write --
@@ -1444,6 +1674,8 @@ FORBIDDEN = [
     ('placeholder-quote', 'placeholder testimonial'),
     ('testimonial goes here', 'placeholder testimonial'),
     ('REPLACE_ME', 'unconfigured form endpoint'),
+    ('Nutrition Reset', 'a second offer that is in no approved document'),
+    ('Coming soon', 'an empty shelf on a live page'),
     ('journal-0', 'retired stock photograph'),
     ('food-portions', 'retired stock photograph'),
     ('food-prep', 'retired stock photograph'),
@@ -1453,19 +1685,52 @@ FORBIDDEN = [
     ('reader-quiet', 'retired stock photograph'),
 ]
 
+def write(name, text):
+    with io.open(os.path.join(OUT, name), 'w', encoding='utf-8',
+                 newline='\n') as f:
+        f.write(text)
+
+
 if __name__ == '__main__':
-    for name, fn in sorted(PAGES.items()):
-        html = fn()
+    today = datetime.date.today().isoformat()
+    built = [(name, fn(), today) for name, fn in sorted(PAGES.items())]
+    built += [(a['slug'] + '.html', build_article(a), a['date'])
+              for a in ARTICLES]
+
+    for name, html, _ in built:
         for bad, why in FORBIDDEN:
             assert bad not in html, '%s found in %s' % (why, name)
         eyebrows = html.count('class="eyebrow')
         assert eyebrows <= 2, '%d eyebrows on %s, budget is 2' % (eyebrows, name)
         notes = html.count('class="note"')
         assert notes <= 2, '%d margin notes on %s, budget is 2' % (notes, name)
-        with io.open(os.path.join(OUT, name), 'w', encoding='utf-8', newline='\n') as f:
-            f.write(html)
-        print('%-15s %6d bytes  %d eyebrow(s)  %d note(s)'
+        write(name, html)
+        print('%-38s %6d bytes  %d eyebrow(s)  %d note(s)'
               % (name, len(html.encode('utf-8')), eyebrows, notes))
+
+    # Canonical URLs, one entry per page, home first.
+    order = {'index.html': 0, 'services.html': 1, 'about.html': 2,
+             'contact.html': 3, 'shop.html': 4, 'blog.html': 5}
+    urls = sorted(built, key=lambda r: (order.get(r[0], 9), r[0]))
+    write('sitemap.xml',
+          u'<?xml version="1.0" encoding="UTF-8"?>\n'
+          u'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+          + u'\n'.join(
+              u'  <url><loc>%s</loc><lastmod>%s</lastmod></url>'
+              % (SITE_URL + ('' if name == 'index.html' else name), lastmod)
+              for name, _, lastmod in urls)
+          + u'\n</urlset>\n')
+    write('robots.txt',
+          u'User-agent: *\nAllow: /\n\nSitemap: %ssitemap.xml\n' % SITE_URL)
+    print('%-38s %6d urls' % ('sitemap.xml', len(urls)))
+
+    if not CALENDAR_URL:
+        print('')
+        print('  ** CALENDAR_URL is not set. Betty\'s own intake names booked')
+        print('     consultation calls as the primary goal of this site, and')
+        print('     the Start here page currently takes a request and answers')
+        print('     it by hand. Paste a Calendly or TidyCal link at the top of')
+        print('     this file to let a prospect book the call herself. **')
     if not FORM_ENDPOINT:
         print('')
         print('  ** FORM_ENDPOINT is not set, so both forms are showing a')

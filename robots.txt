@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://harryroguecoachteams-cmd.github.io/betty-mwihaki/sitemap.xml

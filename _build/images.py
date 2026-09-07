@@ -101,11 +101,95 @@ def new_photos():
          .resize((580, 829), Image.LANCZOS), 'betty-red.jpg', q=86, sharpen=False)
 
 
+# --------------------------------------------------------------- social card --
+# assets/og.jpg, the 1200x630 image every link preview shows: Slack, WhatsApp,
+# Facebook, LinkedIn, X, iMessage. Without one, a shared link renders as a grey
+# rectangle with a URL under it, which is the least premium object a premium
+# brand can put in somebody's feed.
+#
+# It is built here rather than screenshotted so it stays on the deck: forest
+# ground, the wordmark with its clay point, one signature line set in Lora, and
+# her own photograph on the right.
+FONTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '_fonts')
+FOREST = (0x1F, 0x3D, 0x33)
+CLAY = (0xC9, 0x69, 0x4A)
+CLAY_HI = (0xE5, 0x94, 0x73)
+SAGE = (0x8F, 0xA9, 0x9B)
+
+
+def _font(name, size, weight=None):
+    from PIL import ImageFont
+    path = os.path.join(FONTS, name)
+    if not os.path.exists(path):                       # Georgia is the site's
+        path = r'C:/Windows/Fonts/georgia.ttf'         # own declared fallback
+    f = ImageFont.truetype(path, size)
+    if weight:
+        try:
+            f.set_variation_by_axes([weight])
+        except Exception:
+            pass
+    return f
+
+
+def _tracked(d, xy, text, font, fill, track=0):
+    """PIL has no letter-spacing, and the brand's small caps are all tracked."""
+    x, y = xy
+    for ch in text:
+        d.text((x, y), ch, font=font, fill=fill)
+        x += d.textlength(ch, font=font) + track
+    return x
+
+
+def og_card():
+    from PIL import ImageDraw
+    W, H = 1200, 630
+    card = Image.new('RGB', (W, H), FOREST)
+    d = ImageDraw.Draw(card)
+
+    # her photograph, right-hand third
+    pw = 470
+    photo = Image.open(os.path.join(OUT, 'betty-hero.jpg'))
+    photo = cover(photo, pw / float(H), focus=0.55).resize((pw, H), Image.LANCZOS)
+    card.paste(photo, (W - pw, 0))
+    d.rectangle([W - pw - 3, 0, W - pw - 1, H], fill=CLAY)
+
+    x0, right = 78, W - pw - 3 - 78
+
+    # wordmark
+    lora_b = _font('Lora.ttf', 66, 600)
+    end = d.text((x0, 62), 'Betty', font=lora_b, fill=(255, 255, 255))
+    wm = d.textlength('Betty', font=lora_b)
+    d.ellipse([x0 + wm + 8, 62 + 48, x0 + wm + 8 + 11, 62 + 59], fill=CLAY)
+    _tracked(d, (x0 + 3, 146), 'NUTRITION EDUCATION FOR REAL LIFE',
+             _font('Inter.ttf', 15, 600), SAGE, track=2.6)
+
+    # the one line to remember, deck page 30
+    lora = _font('Lora.ttf', 52, 500)
+    lines = ['Stop guessing', 'what to eat.', 'Start understanding',
+             'your food.']
+    y = 236
+    for i, ln in enumerate(lines):
+        d.text((x0, y), ln, font=lora,
+               fill=(255, 255, 255) if i < 2 else (0xE8, 0xEF, 0xEA))
+        y += 62
+    assert max(d.textlength(l, font=lora) for l in lines) < right - x0
+
+    d.rectangle([x0, 520, x0 + 58, 523], fill=CLAY)
+    _tracked(d, (x0, 546), 'A PRACTICAL 16-WEEK NUTRITION COACHING METHOD',
+             _font('Inter.ttf', 14, 600), CLAY_HI, track=1.9)
+
+    path = os.path.join(os.path.dirname(OUT), 'og.jpg')
+    card.save(path, 'JPEG', quality=88, optimize=True, progressive=True)
+    print('%-22s %sx%s %6.1f KB'
+          % ('og.jpg', W, H, os.path.getsize(path) / 1024.0))
+
+
 def main():
     if not os.path.isdir(OUT):
         os.makedirs(OUT)
 
     new_photos()
+    og_card()
 
     # ---- Betty's own photography ------------------------------------------
     # Screenshot_4 is the frame the brand deck picked for the homepage: warm,
@@ -155,4 +239,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    if 'og' in sys.argv[1:]:
+        og_card()
+    else:
+        main()

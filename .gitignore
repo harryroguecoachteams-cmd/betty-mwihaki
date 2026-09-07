@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+
+# Build-time only. Lora and Inter, from github.com/google/fonts, used by
+# images.py to draw assets/og.jpg. The card itself is committed, so nobody
+# needs these unless they are regenerating it; without them images.py falls
+# back to Georgia, which is this site's own declared serif fallback.
+_build/_fonts/
+_build/_stock/

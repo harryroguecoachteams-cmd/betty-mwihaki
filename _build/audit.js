@@ -18,7 +18,10 @@ window.audit = (function () {
   'use strict';
 
   var PAGES = ['index.html', 'about.html', 'services.html',
-               'shop.html', 'blog.html', 'contact.html'];
+               'shop.html', 'blog.html', 'contact.html',
+               'eating-healthy-not-losing-weight.html',
+               'read-a-nutrition-label.html',
+               'what-a-portion-looks-like.html'];
   var WIDTHS = [320, 375, 390, 430, 600, 768, 834, 1024, 1180, 1280, 1440, 1920];
 
   // decorative or deliberately off-canvas: the closed nav panel, the skip link.
