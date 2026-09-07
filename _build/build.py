@@ -166,7 +166,7 @@ if FORM_ENDPOINT:
 else:
     OPTIN = u'''<div class="actions">%s</div>
         <p class="form-note">Email me and I will send it straight back.</p>''' % (
-        mailto('The label-reading guide for real life', 'Ask me for the guide'))
+        mailto('The label-reading guide for real life', 'Email me the guide'))
 
 
 # ------------------------------------------------------- structured data ---
@@ -766,10 +766,9 @@ def build_index():
     <div class="ed">
       <div class="ed-head">
         <h2 data-rv>{h}</h2>
-        <p class="lede">Two of the women I have coached, in as close to
-        their own circumstances as I can put it. Coaching supports habits,
-        understanding and accountability. It is not a promise of a particular
-        result.</p>
+        <p class="lede">Two of the women I have coached. Coaching supports
+        habits, understanding and accountability. It is not a promise of a
+        particular result.</p>
       </div>
       <div class="ed-body">
         <div class="figure-row" data-rv>
@@ -787,11 +786,11 @@ def build_index():
   </div>
   <blockquote class="band" data-rv>
     <div class="wrap">
-      <p class="pull">My own cousin.</p>
-      <p>She came to me worried about where her health was heading, and we
-      worked through her nutrition together, month after month. Family is the
-      hardest audience there is, and the most worth it. She understands her food
-      now, and she is not guessing anymore.</p>
+      <p class="pull">She understands her food now.</p>
+      <p>My own cousin. She came to me worried about where her health was
+      heading, and we worked through her nutrition together, month after month.
+      Family is the hardest audience there is, and the most worth it. She is not
+      guessing anymore.</p>
       <footer>Nutrition coaching client</footer>
     </div>
   </blockquote>
@@ -963,9 +962,11 @@ def build_about():
           precision to the point where every gram was accounted for.</dd>
           <dt>Lived empathy</dt>
           <dd>I understand stubborn belly fat and a body that stops responding
-          the way it used to, because I have had one.</dd>
-          <dt>Responsible proof</dt>
-          <dd>Client stories shared accurately, and only with permission.</dd>
+          the way it used to, because mine did.</dd>
+          <dt>Scope</dt>
+          <dd>Nutrition coaching and education. I do not diagnose or treat, I am
+          not a replacement for your doctor, and I will say so out loud when
+          something belongs with them.</dd>
         </dl>
       </div>
     </div>
@@ -1323,26 +1324,15 @@ def build_shop():
 </section>
 
 <section class="s" id="guide">
-  <div class="wrap">
-    <div class="split lean">
-      <div class="split-copy">
-        {eyebrow}
-        <h2 data-rv>{h2}</h2>
-        <p class="lede">Serving size, protein, added sugar. Three numbers, in
-        that order, and you can judge almost any packet in the aisle. This is the
-        short, plain-English guide I wish every woman had before she started
-        another diet.</p>
-        {optin}
-      </div>
-      <div class="split-media">
-        <div class="three" aria-hidden="true">
-          <p>Serving size</p>
-          <p>Protein</p>
-          <p>Added sugar</p>
-        </div>
-        {n}
-      </div>
-    </div>
+  <div class="wrap narrow">
+    {eyebrow}
+    <h2 data-rv>{h2}</h2>
+    <p class="lede">Serving size, protein, added sugar. Three numbers, in that
+    order, and you can judge almost any packet in the aisle. This is the short,
+    plain-English guide I wish every woman had before she started another
+    diet.</p>
+    {optin}
+    {n}
   </div>
 </section>
 

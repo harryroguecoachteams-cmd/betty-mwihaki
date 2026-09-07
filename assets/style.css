@@ -1093,6 +1093,16 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--clay);box-s
 .entry h3 a:hover,.entry h3 a:focus-visible,
 .lead-story h2 a:hover,.lead-story h2 a:focus-visible{color:var(--clay-ink);border-bottom-color:var(--sage-line)}
 
+/* Inline links inside running copy. Colour on its own is neither an
+   affordance nor an accessible indicator, and clay on oat is quiet. */
+.big-p a,.prose p a,.prose li a,.art-end p a{
+  border-bottom:1px solid rgba(169,80,47,.38);
+  transition:border-color var(--t-fast) var(--ease);
+}
+.big-p a:hover,.prose p a:hover,.prose li a:hover,.art-end p a:hover,
+.big-p a:focus-visible,.prose p a:focus-visible,.prose li a:focus-visible,
+.art-end p a:focus-visible{border-bottom-color:var(--clay-ink)}
+
 /* ==========================================================================
    28. responsive tiers. Everything above can be overridden from here, and
    nothing component-level may be added below this line.
